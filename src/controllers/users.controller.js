@@ -1,6 +1,7 @@
 // Importamos el modelo de User.
 import User from '../models/user.model.js';
-// ya lo añadire import { encrypt, compare } from '../utils/handlePassword.js';
+import { encrypt, compare } from '../utils/handlePassword.js';
+import { tokenSign, verifyToken} from '../utils/handleJwt.js';
 
 // GET /api/users, para obtener todos los usuarios.
 export const getUsers = async (req, res, next) => {
@@ -123,7 +124,7 @@ export const registerCtrl = async (req, res) => {
 
     // comprobar campos obligatorios
     if (!email || !password) {
-      handleHttpError(res, 'EMAIL_AND_PASSWORD_REQUIRED', 400);
+      //handleHttpError(res, 'EMAIL_AND_PASSWORD_REQUIRED', 400);
       return;
     }
 
@@ -134,7 +135,7 @@ export const registerCtrl = async (req, res) => {
       return;
     }
     // Encriptar contraseña
-    //const passwordencriptada = await encrypt(req.body.password);
+    const hashedPassword = await encrypt(req.body.password);
     // generar código de verificación de 6 dígitos
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString()
     
@@ -166,7 +167,7 @@ export const registerCtrl = async (req, res) => {
     res.status(201).send(data);
   } catch (err) {
     console.log(err);
-    handleHttpError(res, 'ERROR_REGISTER_USER');
+    //handleHttpError(res, 'ERROR_REGISTER_USER');
   }
 };
 
@@ -188,10 +189,10 @@ export const loginCtrl = async (req, res) => {
     
     // Comparo la contraseña con el hash a ver si es la original
     const hashPassword = user.password;
-    //const check = await compare(password, hashPassword);
+    const check = await compare(password, hashPassword);
     
     if (!check) {
-      handleHttpError(res, 'INVALID_PASSWORD', 401);
+      //handleHttpError(res, 'INVALID_PASSWORD', 401);
       return;
     }
     
@@ -215,6 +216,6 @@ export const loginCtrl = async (req, res) => {
      res.status(200).send(data);
   } catch (err) {
     console.log(err);
-    handleHttpError(res, 'ERROR_LOGIN_USER', 500);
+    //handleHttpError(res, 'ERROR_LOGIN_USER', 500);
   }
 };
