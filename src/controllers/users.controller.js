@@ -243,3 +243,46 @@ export const getMe = async (req, res, next) => {
     next(error);
   }
 };
+
+export const updateCompanyCtrl = async (req, res, next) => {
+  try {
+    //Sacao los datos que llegan del body
+    const { name, cif, address, isFreelance } = req.body;
+
+    // Busco si ya existe una company con ese CIF
+    let company = await Company.findOne({ cif });
+    //sinoexiste la creamos nueva
+    if (!company) {
+      company = await Company.create({
+        name,
+        cif,
+        address,
+        owner: req.user._id,      // el usuario autenticado será el owner
+        isFreelance: !!isFreelance
+      });
+
+      // Al crear una company nueva, el usuario sigue siendo admin
+      await User.findByIdAndUpdate(req.user._id, {
+        company: company._id,
+        role: 'admin'
+      });
+
+    } else {
+      // Si YA existe una company con ese CIF,
+      // el usuario se une a esa company y pasa a guest
+      await User.findByIdAndUpdate(req.user._id, {
+        company: company._id,
+        role: 'guest'
+      });
+    }
+
+    // Devolvemos respuesta correcta
+    res.status(200).json({
+      message: 'COMPANY_UPDATED',
+      company
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};

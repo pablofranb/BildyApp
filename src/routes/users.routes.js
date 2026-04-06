@@ -7,16 +7,24 @@ import {
   deleteUser,
   registerCtrl,
   loginCtrl,
-  getMe
+  getMe,
+  updateCompanyCtrl
+
 } from '../controllers/users.controller.js';
 import authMiddleware from "../middleware/auth.middleware.js";
+import checkRol from "../middleware/role.middleware.js";
 const router = Router();
-router.get("/", authMiddleware, getMe);
+// privadas
+router.get("/me", authMiddleware, getMe);
 router.get("/", authMiddleware, getUsers);
 router.get("/:id", authMiddleware, getUser);
-router.post("/", authMiddleware, createUser);
-router.put("/:id", authMiddleware, updateUser);
-router.delete("/:id", authMiddleware, deleteUser);
+router.patch('/company', authMiddleware, updateCompanyCtrl);
+
+// privadas  restringidas por rol
+router.post('/', authMiddleware, checkRol(['admin']), createUser);
+router.put('/:id', authMiddleware, checkRol(['admin']), updateUser);
+router.delete('/:id', authMiddleware, checkRol(['admin']), deleteUser);
+//publicas
 router.post('/register', registerCtrl);
 router.post('/login', loginCtrl);
 //prueba
