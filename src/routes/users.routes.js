@@ -6,18 +6,20 @@ import {
   updateUser,
   deleteUser,
   registerCtrl,
-  loginCtrl
+  loginCtrl,
+  getMe
 } from '../controllers/users.controller.js';
-
+import authMiddleware from "../middleware/auth.middleware.js";
 const router = Router();
-
-router.get('/', getUsers);
-router.get('/:id', getUser);
-router.post('/', createUser);
-router.put('/:id', updateUser);
-router.delete('/:id', deleteUser);
+router.get("/", authMiddleware, getMe);
+router.get("/", authMiddleware, getUsers);
+router.get("/:id", authMiddleware, getUser);
+router.post("/", authMiddleware, createUser);
+router.put("/:id", authMiddleware, updateUser);
+router.delete("/:id", authMiddleware, deleteUser);
 router.post('/register', registerCtrl);
 router.post('/login', loginCtrl);
+//prueba
 
 export default router;
 // Qué deberías entender al acabar el bloque 3
