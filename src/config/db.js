@@ -1,4 +1,4 @@
-//conectare el back a la base de 
+//conectare el back a la base de datos para guardar datos o leerlos
 import mongoose from 'mongoose';
 const dbConnect= async() => { 
     const DB_URI= process.env.DB_URI; 

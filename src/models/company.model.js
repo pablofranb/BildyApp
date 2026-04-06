@@ -1,35 +1,43 @@
 import mongoose from 'mongoose';
+//segun mi practica  esta es la plantilla de company
 
 const companySchema = new mongoose.Schema(
   {
+    owner: { 
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+    },
     name: {
       type: String,
-      required: [true, 'El nombre de la empresa es requerido'],
-      trim: true,
-      minlength: [2, 'Mínimo 2 caracteres'],
-      maxlength: [100, 'Máximo 100 caracteres']
+      required: true,
+      trim: true
     },
     cif: {
       type: String,
-      required: [true, 'El CIF es requerido'],
-      unique: true,
+      required: true,
       trim: true,
-      uppercase: true
+      uppercase: true,
+      unique: true
     },
     address: {
-      type: String,
-      required: [true, 'La dirección es requerida'],
-      trim: true
+      street: { type: String, trim: true, default: null },
+      number: { type: String, trim: true, default: null },
+      postal: { type: String, trim: true, default: null },
+      city: { type: String, trim: true, default: null },
+      province: { type: String, trim: true, default: null }
     },
-    sector: {
+    logo: {
       type: String,
-      trim: true,
       default: null
     },
-    website: {
-      type: String,
-      trim: true,
-      default: null
+    isFreelance: {
+      type: Boolean,
+      default: false
+    },
+    deleted: {
+      type: Boolean,
+      default: false
     }
   },
   {
