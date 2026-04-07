@@ -61,8 +61,14 @@ const userSchema = new mongoose.Schema(
     deleted: {
       type: Boolean,
       default: false
-    }
+    },
+    //para comprobar  qfunciona y es valido, parte del refresh
+    refreshToken: {
+        type: String,
+        default: null
+},
   },
+  
   //mis reglas de manejo
   {
     timestamps: true, //para que salga cuando lo añado o actualizo
@@ -70,6 +76,7 @@ const userSchema = new mongoose.Schema(
     toJSON: { virtuals: true }, //cuando pase a json añada  las virtuals 
     toObject: { virtuals: true }//igual pero al convertir a objeto
   }
+  
 );
 
 //no se guarda en la base de datos pero me lo calcula al vuelo con el nombre y apellido para tener el nombre completo, me lo piden en la practcia

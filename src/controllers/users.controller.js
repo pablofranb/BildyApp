@@ -1,5 +1,6 @@
 // Importamos el modelo de User.
 import User from '../models/user.model.js';
+import { z } from 'zod';
 import { encrypt, compare } from '../utils/handlePassword.js';
 import { tokenSign, verifyToken} from '../utils/handleJwt.js';
 import { loginSchema, registerSchema, validationCodeSchema } from "../validators/user.validator.js";
@@ -155,20 +156,25 @@ export const registerCtrl = async (req, res) => {
   verificationAttempts: 3,
 });
 
-    // Ocultar password en la respuesta
-    user.set("password", undefined, { strict: false });
+    
     
      // generar tokens
+    const accessToken = tokenSign(user);
+    const refreshToken = tokenSign(user, '7d');
+    user.refreshToken = refreshToken;
+    await user.save();
+    // Ocultar password en la respuesta
+    user.set("password", undefined, { strict: false });
     const data = {
-      accessToken: tokenSign(user),
-      refreshToken: tokenSign(user, '7d'),
+      accessToken,
+      refreshToken,
       user: {
         email: user.email,
         status: user.status,
         role: user.role
       }
     };
-    
+  
     res.status(201).send(data);
   } catch (err) {
     console.log(err);
@@ -188,31 +194,35 @@ export const registerCtrl = async (req, res) => {
  */
 export const loginCtrl = async (req, res) => {
   try {
-    // validar con zod
     const { email, password } = loginSchema.parse(req.body);
 
-    // Buscar usuario con la password
     const user = await User.findOne({ email }).select(
-      "password name lastName role email status"
+      'password name lastName role email status refreshToken'
     );
 
     if (!user) {
-      return res.status(401).json({ error: "INVALID_CREDENTIALS" });
+      return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
     }
 
-    // Comparo la contraseña con el hash a ver si es la original
     const check = await compare(password, user.password);
 
     if (!check) {
-      return res.status(401).json({ error: "INVALID_CREDENTIALS" });
+      return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
     }
 
-    user.set("password", undefined, { strict: false });
+    const accessToken = tokenSign(user);
+    const refreshToken = tokenSign(user, '7d');
 
-    // devolver tokens
-    const data = {
-      accessToken: tokenSign(user),
-      refreshToken: tokenSign(user, "7d"),
+    // primero guardas el refresh token
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    // luego preparas la respuesta sin password
+    user.set('password', undefined, { strict: false });
+
+    return res.status(200).json({
+      accessToken,
+      refreshToken,
       user: {
         id: user._id,
         email: user.email,
@@ -221,16 +231,78 @@ export const loginCtrl = async (req, res) => {
         role: user.role,
         status: user.status,
       },
-    };
-
-    res.status(200).json(data);
+    });
   } catch (err) {
+    console.log('LOGIN ERROR:', err);
+
     if (err instanceof z.ZodError) {
-      return res.status(400).json({ error: "VALIDATION_ERROR" });
+      return res.status(400).json({ error: 'VALIDATION_ERROR' });
     }
 
-    res.status(500).json({ error: "ERROR_LOGIN_USER" });
+    return res.status(500).json({
+      error: 'ERROR_LOGIN_USER',
+      detail: err.message
+    });
   }
+};
+
+
+//parte para refresh y logout exigidas
+//El frontend manda un refresh token y el backend: comprueba que el token es válidoSi todo está bien → te da un nuevo access token
+export const refreshTokenCtrl = async (req, res) => {
+  try {
+    // cojo el refresh del body
+    const { refreshToken } = req.body;
+
+    // Si no viene token error
+    if (!refreshToken) {
+      return res.status(400).json({ error: 'REFRESH_TOKEN_REQUIRED' });
+    }
+
+    // Verifico el token firma y expiración
+    const decoded = verifyToken(refreshToken);
+
+    // Si el token no es válido  error
+    if (!decoded) {
+      return res.status(401).json({ error: 'INVALID_REFRESH_TOKEN' });
+    }
+
+    //  Buscamos al usuario en base de datos usando el id del token
+    const user = await User.findById(decoded._id);
+
+    // 6Comprobamos dos cosas que el usuario exista yque el refreshToken enviado coincida con el guardado en BD
+    // Esto evita usar tokens antiguos o robados
+    if (!user || user.refreshToken !== refreshToken) {
+      return res.status(401).json({ error: 'INVALID_REFRESH_TOKEN' });
+    }
+
+    // Generamo un nuevo access token 
+    const newAccessToken = tokenSign(user);
+
+    //  Lo devuelvo
+    return res.status(200).json({
+      accessToken: newAccessToken
+    });
+
+  } catch (error) {
+    
+    return res.status(500).json({ error: 'ERROR_REFRESH_TOKEN' });
+  }
+};
+//logout
+export const logoutCtrl = async (req, res) => { try { // Buscamo al usuario usando el id que dejó authMiddleware en req.user 
+      const user = await User.findById(req.user._id); 
+      //Si no existe el usuario error 
+      if (!user) { 
+      return res.status(404).json({ error: 'USER_NOT_FOUND' }); }
+      // eliminaos el refresh token guardado en base de datos 
+      user.refreshToken = null; 
+      // guardo el cambio en la base de datos
+        await user.save(); 
+      //Respondo confirmando el logout
+      return res.status(200).json({ message: 'LOGOUT_OK' });
+      } catch (error) {
+        return res.status(500).json({ error: 'ERROR_LOGOUT' }); } 
 };
 //prueba 
 export const getMe = async (req, res, next) => {

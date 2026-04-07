@@ -9,7 +9,9 @@ import {
   loginCtrl,
   getMe,
   updateCompanyCtrl,
-  validateEmailCtrl
+  validateEmailCtrl,
+  refreshTokenCtrl,
+  logoutCtrl
 
 } from '../controllers/users.controller.js';
 import authMiddleware from "../middleware/auth.middleware.js";
@@ -21,6 +23,8 @@ router.get("/", authMiddleware, getUsers);
 router.get("/:id", authMiddleware, getUser);
 router.patch('/company', authMiddleware, updateCompanyCtrl);
 router.put('/validation', authMiddleware, validateEmailCtrl);
+router.post('/refresh', refreshTokenCtrl);
+router.post('/logout', authMiddleware, logoutCtrl);
 // privadas  restringidas por rol
 router.post('/', authMiddleware, checkRol(['admin']), createUser);
 router.put('/:id', authMiddleware, checkRol(['admin']), updateUser);
