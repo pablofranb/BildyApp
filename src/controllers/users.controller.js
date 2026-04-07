@@ -1,4 +1,4 @@
-// Importamos el modelo de User.
+
 import User from '../models/user.model.js';
 import { encrypt, compare } from '../utils/handlePassword.js';
 import { tokenSign, verifyToken} from '../utils/handleJwt.js';
