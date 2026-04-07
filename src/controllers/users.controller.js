@@ -163,6 +163,7 @@ export const registerCtrl = async (req, res) => {
         status: user.status,
         role: user.role,
       },
+      verificationCode: user.verificationCode
     });
   } catch (err) {
     console.log("REGISTER ERROR:", err);
@@ -224,7 +225,33 @@ export const loginCtrl = async (req, res) => {
     });
   }
 };
+export const updateMeCtrl = async (req, res, next) => {
+  try {
+    const { name, lastName, nif } = req.body;
 
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { name, lastName, nif },
+      {
+        new: true,
+        runValidators: true
+      }
+    ).populate('company', 'name cif address');
+
+    if (!user) {
+      return res.status(404).json({
+        error: 'USER_NOT_FOUND'
+      });
+    }
+
+    return res.status(200).json({
+      message: 'USER_UPDATED',
+      data: user
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 //parte para refresh y logout exigidas
 //El frontend manda un refresh token y el backend: comprueba que el token es válidoSi todo está bien → te da un nuevo access token
 export const refreshTokenCtrl = async (req, res) => {
@@ -438,5 +465,38 @@ export const deleteMeCtrl = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ error: 'ERROR_DELETING_USER' });
+  }
+};
+
+export const uploadLogoCtrl = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'USER_NOT_FOUND' });
+    }
+
+    if (!user.company) {
+      return res.status(400).json({ error: 'USER_WITHOUT_COMPANY' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'FILE_REQUIRED' });
+    }
+
+    const logoUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+
+    const company = await Company.findByIdAndUpdate(
+      user.company,
+      { logo: logoUrl },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      message: 'LOGO_UPDATED',
+      logo: company.logo
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'ERROR_UPLOADING_LOGO' });
   }
 };

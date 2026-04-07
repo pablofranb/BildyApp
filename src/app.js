@@ -3,7 +3,7 @@
 //aqui monto mi back
 import express from 'express';
 import userRoutes from './routes/users.routes.js';
-
+import path from 'path';
 const app = express();
 
 //para que entienda json en los campos 
@@ -23,6 +23,6 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/user', userRoutes);
-
+app.use('/uploads', express.static(path.resolve('uploads')));
 export default app;
 

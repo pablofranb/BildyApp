@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { upload } from '../middleware/upload.js';
 import {
   getUsers,
   getUser,
@@ -13,7 +14,9 @@ import {
   refreshTokenCtrl,
   logoutCtrl,
   changePasswordCtrl,
-  deleteMeCtrl
+  deleteMeCtrl,
+  uploadLogoCtrl,
+  updateMeCtrl
 } from '../controllers/users.controller.js';
 
 import authMiddleware from "../middleware/auth.middleware.js";
@@ -32,12 +35,14 @@ const router = Router();
 router.get("/me", authMiddleware, getMe);
 router.delete('/', authMiddleware, deleteMeCtrl);
 router.get("/", authMiddleware, getUsers);
+router.put('/me', authMiddleware, updateMeCtrl);
 router.get("/:id", authMiddleware, getUser);
 router.patch('/company', authMiddleware, updateCompanyCtrl);
 router.put('/validation', authMiddleware, validate(validationCodeSchema), validateEmailCtrl);
 router.post('/refresh', refreshTokenCtrl);
 router.post('/logout', authMiddleware, logoutCtrl);
 router.put('/password', authMiddleware, validate(changePasswordSchema), changePasswordCtrl);
+router.patch('/logo', authMiddleware, upload.single('logo'), uploadLogoCtrl);
 
 // privadas restringidas por rol
 router.post('/', authMiddleware, checkRol(['admin']), createUser);
