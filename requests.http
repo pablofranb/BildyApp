@@ -1,0 +1,255 @@
+### health
+GET http://localhost:3000/health
+
+###
+
+### 1) register usuario 1
+POST http://localhost:3000/api/user/register
+Content-Type: application/json
+
+{
+  "email": "testaaaaaaa@bildy.com",
+  "password": "12345678"
+}
+###
+
+### 2) validation usuario 1
+### usa el accessToken del register
+### usa el verificationCode real que veas en la base de datos
+PUT http://localhost:3000/api/user/validation
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjIyMDYsImV4cCI6MTc3NTU2OTQwNn0.Lpu2ejTWjux_SE0266A0IJ-U8iSWE1WjOlsL53uF_ZQ
+
+{
+  "code": "859224"
+}
+
+###
+
+### 3) login usuario 1
+POST http://localhost:3000/api/user/login
+Content-Type: application/json
+
+{
+  "email": "testaaaaaaa@bildy.com",
+  "password": "12345678"
+}
+
+###
+
+### 4) onboarding datos personales usuario 1
+### si tu endpoint final es PUT /api/user/register autenticado, usa este
+PUT http://localhost:3000/api/user/me
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjIyMDYsImV4cCI6MTc3NTU2OTQwNn0.Lpu2ejTWjux_SE0266A0IJ-U8iSWE1WjOlsL53uF_ZQ
+
+{
+  "name": "Pablo",
+  "lastName": "Franco",
+  "nif": "12345678A"
+}
+
+###
+
+### 5) onboarding company usuario 1 -> CIF nuevo, debe quedar admin
+PATCH http://localhost:3000/api/user/company
+Content-Type: application/json
+Authorization: Bearer  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjIyMDYsImV4cCI6MTc3NTU2OTQwNn0.Lpu2ejTWjux_SE0266A0IJ-U8iSWE1WjOlsL53uF_ZQ
+
+{
+  "name": "Bildy Obras SL",
+  "cif": "B12345678",
+  "address": {
+    "street": "Calle Mayor",
+    "number": "12",
+    "postal": "28001",
+    "city": "Madrid",
+    "province": "Madrid"
+  },
+  "isFreelance": false
+}
+
+###
+
+### 6) get me usuario 1
+GET http://localhost:3000/api/user/me
+Authorization: Bearer  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjIyMDYsImV4cCI6MTc3NTU2OTQwNn0.Lpu2ejTWjux_SE0266A0IJ-U8iSWE1WjOlsL53uF_ZQ
+
+###
+
+### 7) refresh usuario 1
+POST http://localhost:3000/api/user/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjI0MDcsImV4cCI6MTc3NTU2OTYwN30.pZJ9CHaQa4nh2xLAw_gxeN_rGyKND8Mje8vCjZ8Tido"
+}
+
+###
+
+### 8) logout usuario 1
+POST http://localhost:3000/api/user/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiZ3Vlc3QiLCJpYXQiOjE3NzU1NjM3OTksImV4cCI6MTc3NTU3MDk5OX0.kXSkhWxUgm-QOfekLlyg-jsxekmWfOTB_OgBPh8i0jM
+
+###
+
+### 9) refresh después de logout -> debe fallar 401
+POST http://localhost:3000/api/user/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjI0MDcsImV4cCI6MTc3NTU2OTYwN30.pZJ9CHaQa4nh2xLAw_gxeN_rGyKND8Mje8vCjZ8Tido"
+}
+
+###
+
+### 10) login usuario 1 otra vez para seguir probando
+POST http://localhost:3000/api/user/login
+Content-Type: application/json
+
+{
+  "email": "testaaaaaaa@bildy.com",
+  "password": "12345678"
+}
+
+###
+
+### 11) cambiar contraseña usuario 1
+PUT http://localhost:3000/api/user/password
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiZ3Vlc3QiLCJpYXQiOjE3NzU1NjM4NzEsImV4cCI6MTc3NTU3MTA3MX0.JX7DMHSgDec1_wn254EMseqNXHOFWy2OKf3lS_ezDkk
+
+{
+  "currentPassword": "12345678",
+  "newPassword": "87654321"
+}
+
+###
+
+### 12) login con contraseña nueva -> debe funcionar
+POST http://localhost:3000/api/user/login
+Content-Type: application/json
+
+{
+  "email": "testaaaaaaa@bildy.com",
+  "password": "87654321"
+}
+
+###
+
+### 13) login con contraseña antigua -> debe fallar
+POST http://localhost:3000/api/user/login
+Content-Type: application/json
+
+{
+  "email": "testaaaaaaa@bildy.com",
+  "password": "12345678"
+}
+
+###
+
+### 14) register usuario 2
+POST http://localhost:3000/api/user/register
+Content-Type: application/json
+
+{
+  "email": "test2a@bildy.com",
+  "password": "12345678"
+}
+
+###
+
+### 15) login usuario 2
+POST http://localhost:3000/api/user/login
+Content-Type: application/json
+
+{
+  "email": "test2a@bildy.com",
+  "password": "12345678"
+}
+
+###
+
+### 16) onboarding company usuario 2 -> mismo CIF, debe pasar a guest
+PATCH http://localhost:3000/api/user/company
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZjVkYWZlOTY5NjY2ZjkzYTdhNjUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjQzOTQsImV4cCI6MTc3NTU3MTU5NH0.ILOof8S6jn4ZSgN8I1Um8ZwZAhRX3VulGWwBxxlAoNE
+
+{
+  "name": "Bildy Obras SL",
+  "cif": "B12345678",
+  "address": {
+    "street": "Calle Mayor",
+    "number": "12",
+    "postal": "28001",
+    "city": "Madrid",
+    "province": "Madrid"
+  },
+  "isFreelance": false
+}
+
+###
+
+### 17) get me usuario 2 -> comprobar role guest
+GET http://localhost:3000/api/user/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZjVkYWZlOTY5NjY2ZjkzYTdhNjUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjQzOTQsImV4cCI6MTc3NTU3MTU5NH0.ILOof8S6jn4ZSgN8I1Um8ZwZAhRX3VulGWwBxxlAoNE
+
+###
+
+PUT http://localhost:3000/api/user/69d4edde33b287351876ea75
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZjVkYWZlOTY5NjY2ZjkzYTdhNjUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjQzOTQsImV4cCI6MTc3NTU3MTU5NH0.ILOof8S6jn4ZSgN8I1Um8ZwZAhRX3VulGWwBxxlAoNE
+
+{
+  "name": "Prueba"
+}
+###
+
+### 19) logo company usuario 1
+### esta parte normalmente mejor en Postman o Thunder Client
+### body form-data, campo logo, tipo File
+PATCH http://localhost:3000/api/user/logo
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiZ3Vlc3QiLCJpYXQiOjE3NzU1NjQwMzgsImV4cCI6MTc3NTU3MTIzOH0.4-p3rF1U4ACOknywdvZtRrqmC10oZMLsGdhhP18ea-w
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="logo"; filename="logo.png"
+Content-Type: image/png
+
+< ./logo.png
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### 20) get me usuario 1 -> comprobar company.logo
+GET http://localhost:3000/api/user/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiZ3Vlc3QiLCJpYXQiOjE3NzU1NjQwMzgsImV4cCI6MTc3NTU3MTIzOH0.4-p3rF1U4ACOknywdvZtRrqmC10oZMLsGdhhP18ea-w
+
+###
+
+### 21) soft delete usuario 2
+DELETE http://localhost:3000/api/user?soft=true
+Authorization: Bearer ACCESS_TOKEN_USER_2
+
+###
+
+### 22) get me usuario 2 -> comprobar deleted true
+GET http://localhost:3000/api/user/me
+Authorization: Bearer ACCESS_TOKEN_USER_2
+
+###
+
+### 23) hard delete usuario 2
+### si quieres probar hard delete, usa otro usuario de prueba distinto
+DELETE http://localhost:3000/api/user
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZjRhYWZlOTY5NjY2ZjkzYTdhMmMiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjM5NTQsImV4cCI6MTc3NTU3MTE1NH0.O6c0qbXwwApDQy0YPoReVZlYM5JWvIvggGb7EfYaKjA
+
+###
+
+### 24) login usuario 2 después de hard delete -> debe fallar
+POST http://localhost:3000/api/user/login
+Content-Type: application/json
+
+{
+  "email": "test2a@bildy.com",
+  "password": "12345678"
+}
