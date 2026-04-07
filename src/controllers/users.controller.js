@@ -2,7 +2,7 @@
 import User from '../models/user.model.js';
 import { encrypt, compare } from '../utils/handlePassword.js';
 import { tokenSign, verifyToken} from '../utils/handleJwt.js';
-import { loginSchema, registerSchema } from "../validators/user.validator.js";
+import { loginSchema, registerSchema, validationCodeSchema } from "../validators/user.validator.js";
 import Company from "../models/company.model.js";
 // GET /api/users, para obtener todos los usuarios.
 export const getUsers = async (req, res, next) => {
@@ -284,5 +284,43 @@ export const updateCompanyCtrl = async (req, res, next) => {
 
   } catch (error) {
     next(error);
+  }
+};
+export const validateEmailCtrl = async (req, res) => {
+  try {
+    const { code } = validationCodeSchema.parse(req.body);
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'USER_NOT_FOUND' });
+    }
+
+    if (user.verificationAttempts <= 0) {
+      return res.status(429).json({ error: 'NO_ATTEMPTS_LEFT' });
+    }
+
+    if (user.verificationCode !== code) {
+      user.verificationAttempts -= 1;
+      await user.save();
+
+      return res.status(400).json({
+        error: 'INVALID_CODE',
+        attemptsLeft: user.verificationAttempts
+      });
+    }
+
+    user.status = 'verified';
+    await user.save();
+
+    return res.status(200).json({
+      message: 'EMAIL_VERIFIED'
+    });
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR' });
+    }
+
+    return res.status(500).json({ error: 'ERROR_VALIDATING_EMAIL' });
   }
 };
