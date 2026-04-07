@@ -398,3 +398,32 @@ export const changePasswordCtrl = async (req, res) => {
     return res.status(500).json({ error: "ERROR_CHANGING_PASSWORD" });
   }
 };
+//borrar
+export const deleteMeCtrl = async (req, res) => {
+  try {
+    const { soft } = req.query;
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'USER_NOT_FOUND' });
+    }
+
+    if (soft === 'true') {
+      user.deleted = true;
+      await user.save();
+
+      return res.status(200).json({
+        message: 'USER_SOFT_DELETED'
+      });
+    }
+
+    await User.findByIdAndDelete(req.user._id);
+
+    return res.status(200).json({
+      message: 'USER_DELETED'
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'ERROR_DELETING_USER' });
+  }
+};

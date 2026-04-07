@@ -12,7 +12,8 @@ import {
   validateEmailCtrl,
   refreshTokenCtrl,
   logoutCtrl,
-  changePasswordCtrl
+  changePasswordCtrl,
+  deleteMeCtrl
 } from '../controllers/users.controller.js';
 
 import authMiddleware from "../middleware/auth.middleware.js";
@@ -29,6 +30,7 @@ const router = Router();
 
 // privadas
 router.get("/me", authMiddleware, getMe);
+router.delete('/', authMiddleware, deleteMeCtrl);
 router.get("/", authMiddleware, getUsers);
 router.get("/:id", authMiddleware, getUser);
 router.patch('/company', authMiddleware, updateCompanyCtrl);
