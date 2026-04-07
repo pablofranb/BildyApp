@@ -4,6 +4,7 @@ import { encrypt, compare } from '../utils/handlePassword.js';
 import { tokenSign, verifyToken} from '../utils/handleJwt.js';
 import Company from "../models/company.model.js";
 import { changePasswordSchema } from '../validators/user.validator.js';
+import { notificationService } from '../services/notification.service.js';
 // GET /api/users, para obtener todos los usuarios.
 export const getUsers = async (req, res, next) => {
   try {
@@ -142,7 +143,10 @@ export const registerCtrl = async (req, res) => {
       verificationCode,
       verificationAttempts: 3,
     });
-
+    notificationService.emit('user:registered', {
+    userId: user._id,
+    email: user.email
+  });
     const accessToken = tokenSign(user);
     const refreshToken = tokenSign(user, "7d");
 
@@ -359,6 +363,10 @@ export const validateEmailCtrl = async (req, res) => {
 
     user.status = "verified";
     await user.save();
+    notificationService.emit('user:verified', {
+       userId: user._id,
+        email: user.email
+    });
 
     return res.status(200).json({
       message: "EMAIL_VERIFIED",
@@ -417,6 +425,11 @@ export const deleteMeCtrl = async (req, res) => {
         message: 'USER_SOFT_DELETED'
       });
     }
+    notificationService.emit('user:deleted', {
+    userId: user._id,
+    email: user.email,
+    soft: soft === 'true'
+} );
 
     await User.findByIdAndDelete(req.user._id);
 
