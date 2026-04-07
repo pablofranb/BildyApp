@@ -1,10 +1,9 @@
 // Importamos el modelo de User.
 import User from '../models/user.model.js';
-import { z } from 'zod';
 import { encrypt, compare } from '../utils/handlePassword.js';
 import { tokenSign, verifyToken} from '../utils/handleJwt.js';
-import { loginSchema, registerSchema, validationCodeSchema } from "../validators/user.validator.js";
 import Company from "../models/company.model.js";
+import { changePasswordSchema } from '../validators/user.validator.js';
 // GET /api/users, para obtener todos los usuarios.
 export const getUsers = async (req, res, next) => {
   try {
@@ -121,70 +120,52 @@ export const deleteUser = async (req, res, next) => {
 
 
 
-//registrar
+// registrar
 export const registerCtrl = async (req, res) => {
   try {
-     // validar con zod
-    const validatedData = registerSchema.parse(req.body);
-    const { email, password } = validatedData;
+    // ya viene validado desde validate(registerSchema)
+    const { email, password } = req.body;
 
-     // comprobar campos obligatorios
-    if (!email || !password) {
-      return res.status(400).json({
-        error: "EMAIL_AND_PASSWORD_REQUIRED",
-      });
-    }
-
-    // Verificar si el email ya existe
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      //esto ya lo añadire handleHttpError(res, 'EMAIL_ALREADY_EXISTS', 409);
-        return res.status(409).json({ error: "EMAIL_ALREADY_EXISTS" });
+      return res.status(409).json({ error: "EMAIL_ALREADY_EXISTS" });
     }
-    // Encriptar contraseña
-    const hashedPassword = await encrypt(password);
-    // generar código de verificación de 6 dígitos
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString()
-    
-    /// crear usuario
-   const user = await User.create({
-  email,
-  password: hashedPassword,
-  role: "admin",
-  status: "pending",
-  verificationCode,
-  verificationAttempts: 3,
-});
 
-    
-    
-     // generar tokens
+    const hashedPassword = await encrypt(password);
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const user = await User.create({
+      email,
+      password: hashedPassword,
+      role: "admin",
+      status: "pending",
+      verificationCode,
+      verificationAttempts: 3,
+    });
+
     const accessToken = tokenSign(user);
-    const refreshToken = tokenSign(user, '7d');
+    const refreshToken = tokenSign(user, "7d");
+
     user.refreshToken = refreshToken;
     await user.save();
-    // Ocultar password en la respuesta
+
     user.set("password", undefined, { strict: false });
-    const data = {
+
+    return res.status(201).json({
       accessToken,
       refreshToken,
       user: {
         email: user.email,
         status: user.status,
-        role: user.role
-      }
-    };
-  
-    res.status(201).send(data);
+        role: user.role,
+      },
+    });
   } catch (err) {
-    console.log(err);
-    //handleHttpError(res, 'ERROR_REGISTER_USER');
-    if (err instanceof z.ZodError) {
-      return res.status(400).json({
-        error: "VALIDATION_ERROR",
-        details: err.errors,
-      });
-    }
+    console.log("REGISTER ERROR:", err);
+    return res.status(500).json({
+      error: "ERROR_REGISTER_USER",
+      detail: err.message,
+    });
   }
 };
 
@@ -194,31 +175,30 @@ export const registerCtrl = async (req, res) => {
  */
 export const loginCtrl = async (req, res) => {
   try {
-    const { email, password } = loginSchema.parse(req.body);
+    // ya viene validado desde validate(loginSchema)
+    const { email, password } = req.body;
 
     const user = await User.findOne({ email }).select(
-      'password name lastName role email status refreshToken'
+      "password name lastName role email status refreshToken"
     );
 
     if (!user) {
-      return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
+      return res.status(401).json({ error: "INVALID_CREDENTIALS" });
     }
 
     const check = await compare(password, user.password);
 
     if (!check) {
-      return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
+      return res.status(401).json({ error: "INVALID_CREDENTIALS" });
     }
 
     const accessToken = tokenSign(user);
-    const refreshToken = tokenSign(user, '7d');
+    const refreshToken = tokenSign(user, "7d");
 
-    // primero guardas el refresh token
     user.refreshToken = refreshToken;
     await user.save();
 
-    // luego preparas la respuesta sin password
-    user.set('password', undefined, { strict: false });
+    user.set("password", undefined, { strict: false });
 
     return res.status(200).json({
       accessToken,
@@ -233,19 +213,13 @@ export const loginCtrl = async (req, res) => {
       },
     });
   } catch (err) {
-    console.log('LOGIN ERROR:', err);
-
-    if (err instanceof z.ZodError) {
-      return res.status(400).json({ error: 'VALIDATION_ERROR' });
-    }
-
+    console.log("LOGIN ERROR:", err);
     return res.status(500).json({
-      error: 'ERROR_LOGIN_USER',
-      detail: err.message
+      error: "ERROR_LOGIN_USER",
+      detail: err.message,
     });
   }
 };
-
 
 //parte para refresh y logout exigidas
 //El frontend manda un refresh token y el backend: comprueba que el token es válidoSi todo está bien → te da un nuevo access token
@@ -360,16 +334,17 @@ export const updateCompanyCtrl = async (req, res, next) => {
 };
 export const validateEmailCtrl = async (req, res) => {
   try {
-    const { code } = validationCodeSchema.parse(req.body);
+    // ya viene validado desde validate(validationCodeSchema)
+    const { code } = req.body;
 
     const user = await User.findById(req.user._id);
 
     if (!user) {
-      return res.status(404).json({ error: 'USER_NOT_FOUND' });
+      return res.status(404).json({ error: "USER_NOT_FOUND" });
     }
 
     if (user.verificationAttempts <= 0) {
-      return res.status(429).json({ error: 'NO_ATTEMPTS_LEFT' });
+      return res.status(429).json({ error: "NO_ATTEMPTS_LEFT" });
     }
 
     if (user.verificationCode !== code) {
@@ -377,22 +352,49 @@ export const validateEmailCtrl = async (req, res) => {
       await user.save();
 
       return res.status(400).json({
-        error: 'INVALID_CODE',
-        attemptsLeft: user.verificationAttempts
+        error: "INVALID_CODE",
+        attemptsLeft: user.verificationAttempts,
       });
     }
 
-    user.status = 'verified';
+    user.status = "verified";
     await user.save();
 
     return res.status(200).json({
-      message: 'EMAIL_VERIFIED'
+      message: "EMAIL_VERIFIED",
     });
   } catch (err) {
-    if (err instanceof z.ZodError) {
-      return res.status(400).json({ error: 'VALIDATION_ERROR' });
+    return res.status(500).json({ error: "ERROR_VALIDATING_EMAIL" });
+  }
+};
+
+// nueva contraseña
+export const changePasswordCtrl = async (req, res) => {
+  try {
+    // ya viene validado desde validate(changePasswordSchema)
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user._id).select("password");
+
+    if (!user) {
+      return res.status(404).json({ error: "USER_NOT_FOUND" });
     }
 
-    return res.status(500).json({ error: 'ERROR_VALIDATING_EMAIL' });
+    const check = await compare(currentPassword, user.password);
+
+    if (!check) {
+      return res.status(401).json({ error: "INVALID_CURRENT_PASSWORD" });
+    }
+
+    const newHashedPassword = await encrypt(newPassword);
+
+    user.password = newHashedPassword;
+    await user.save();
+
+    return res.status(200).json({
+      message: "PASSWORD_UPDATED",
+    });
+  } catch (err) {
+    return res.status(500).json({ error: "ERROR_CHANGING_PASSWORD" });
   }
 };

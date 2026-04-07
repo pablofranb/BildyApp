@@ -23,3 +23,12 @@ export const validationCodeSchema = z.object({
     .trim()
     .regex(/^\d{6}$/, 'El código debe tener exactamente 6 dígitos')
 });
+
+//parte de cambia contraseña, necesito la contraseña actual y la nueva, y que sean diferentes entre sí
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(8),
+  newPassword: z.string().min(8)
+}).refine(data => data.currentPassword !== data.newPassword, {
+  message: "NEW_PASSWORD_MUST_BE_DIFFERENT",
+  path: ["newPassword"]
+});
