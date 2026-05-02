@@ -267,12 +267,11 @@ export const refreshTokenCtrl = async (req, res) => {
     // Verifico el token firma y expiración
     const decoded = verifyToken(refreshToken);
 
-    // Si el token no es válido  error
     if (!decoded) {
       return res.status(401).json({ error: 'INVALID_REFRESH_TOKEN' });
     }
 
-    //  Buscamos al usuario en base de datos usando el id del token
+    //  Busco al usuario en base de datos usando el id del token
     const user = await User.findById(decoded._id);
 
     // 6Comprobamos dos cosas que el usuario exista yque el refreshToken enviado coincida con el guardado en BD
@@ -280,11 +279,7 @@ export const refreshTokenCtrl = async (req, res) => {
     if (!user || user.refreshToken !== refreshToken) {
       return res.status(401).json({ error: 'INVALID_REFRESH_TOKEN' });
     }
-
-    // Generamo un nuevo access token 
     const newAccessToken = tokenSign(user);
-
-    //  Lo devuelvo
     return res.status(200).json({
       accessToken: newAccessToken
     });
@@ -297,7 +292,6 @@ export const refreshTokenCtrl = async (req, res) => {
 //logout
 export const logoutCtrl = async (req, res) => { try { // Buscamo al usuario usando el id que dejó authMiddleware en req.user 
       const user = await User.findById(req.user._id); 
-      //Si no existe el usuario error 
       if (!user) { 
       return res.status(404).json({ error: 'USER_NOT_FOUND' }); }
       // eliminaos el refresh token guardado en base de datos 

@@ -4,6 +4,8 @@
 import express from 'express';
 import userRoutes from './routes/users.routes.js';
 import path from 'path';
+import morganBody from 'morgan-body';
+import { loggerStream } from './utils/handleLogger.js';
 const app = express();
 
 //para que entienda json en los campos 
@@ -20,6 +22,13 @@ app.get('/health', (req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString()
   });
+});
+
+// Después de express.json(), antes de las rutas
+morganBody(app, {
+  noColors: true,
+  skip: (req, res) => res.statusCode < 400, // Solo errores
+  stream: loggerStream
 });
 
 app.use('/api/user', userRoutes);
