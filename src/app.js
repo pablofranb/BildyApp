@@ -6,6 +6,7 @@ import userRoutes from './routes/users.routes.js';
 import path from 'path';
 import morganBody from 'morgan-body';
 import { loggerStream } from './utils/handleLogger.js';
+import { errorHandler } from './middleware/error-handler.js';
 const app = express();
 
 //para que entienda json en los campos 
@@ -33,5 +34,8 @@ morganBody(app, {
 
 app.use('/api/user', userRoutes);
 app.use('/uploads', express.static(path.resolve('uploads')));
+
+app.use(errorHandler);
+
 export default app;
 
