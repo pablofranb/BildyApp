@@ -3,6 +3,7 @@
 //aqui monto mi back
 import express from 'express';
 import userRoutes from './routes/users.routes.js';
+import clientRoutes from './routes/client.routes.js';
 import path from 'path';
 import morganBody from 'morgan-body';
 import { loggerStream } from './utils/handleLogger.js';
@@ -33,6 +34,7 @@ morganBody(app, {
 });
 
 app.use('/api/user', userRoutes);
+app.use('/api/client', clientRoutes);
 app.use('/uploads', express.static(path.resolve('uploads')));
 
 app.use(errorHandler);
