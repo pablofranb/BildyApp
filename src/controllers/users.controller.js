@@ -5,6 +5,7 @@ import { tokenSign, verifyToken} from '../utils/handleJwt.js';
 import Company from "../models/company.model.js";
 import { changePasswordSchema } from '../validators/user.validator.js';
 import { notificationService } from '../services/notification.service.js';
+import { sendVerificationEmail } from '../services/email.service.js';
 // GET /api/users, para obtener todos los usuarios.
 export const getUsers = async (req, res, next) => {
   try {
@@ -144,9 +145,12 @@ export const registerCtrl = async (req, res) => {
       verificationAttempts: 3,
     });
     notificationService.emit('user:registered', {
-    userId: user._id,
-    email: user.email
-  });
+      userId: user._id,
+      email: user.email
+    });
+
+    await sendVerificationEmail(user.email, verificationCode);
+
     const accessToken = tokenSign(user);
     const refreshToken = tokenSign(user, "7d");
 
