@@ -5,6 +5,7 @@ import express from 'express';
 import userRoutes from './routes/users.routes.js';
 import clientRoutes from './routes/client.routes.js';
 import projectRoutes from './routes/project.routes.js';
+import deliveryNoteRoutes from './routes/deliverynote.routes.js';
 import path from 'path';
 import morganBody from 'morgan-body';
 import { loggerStream } from './utils/handleLogger.js';
@@ -37,6 +38,7 @@ morganBody(app, {
 app.use('/api/user', userRoutes);
 app.use('/api/client', clientRoutes);
 app.use('/api/project', projectRoutes);
+app.use('/api/deliverynote', deliveryNoteRoutes);
 app.use('/uploads', express.static(path.resolve('uploads')));
 
 app.use(errorHandler);
