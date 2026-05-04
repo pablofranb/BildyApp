@@ -2,6 +2,10 @@ import DeliveryNote from '../models/deliverynote.model.js';
 import Client from '../models/client.model.js';
 import Project from '../models/project.model.js';
 import { AppError } from '../utils/AppError.js';
+import { generateDeliveryNotePdf } from '../services/pdf.service.js';
+import sharp from 'sharp';
+import fs from 'fs';
+import path from 'path';
 
 // POST /api/deliverynote — crea un albarán verificando que cliente y proyecto son de la misma empresa
 export const createDeliveryNote = async (req, res, next) => {
@@ -121,6 +125,88 @@ export const deleteDeliveryNote = async (req, res, next) => {
     await DeliveryNote.findByIdAndDelete(req.params.id);
 
     res.json({ message: 'DELIVERYNOTE_DELETED' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /api/deliverynote/pdf/:id — genera y devuelve el PDF del albarán
+export const getDeliveryNotePdf = async (req, res, next) => {
+  try {
+    const { company } = req.user;
+
+    const note = await DeliveryNote.findOne({ _id: req.params.id, company })
+      .populate('client', 'name cif email')
+      .populate('project', 'name projectCode')
+      .populate('user', 'name email');
+
+    if (!note) {
+      return next(AppError.notFound('Albarán no encontrado', 'DELIVERYNOTE_NOT_FOUND'));
+    }
+
+    const relativePath = await generateDeliveryNotePdf(note);
+    const absolutePath = path.resolve(relativePath);
+
+    // guardar la ruta del PDF en el documento si no estaba guardada
+    if (!note.pdfUrl) {
+      note.pdfUrl = `/${relativePath}`;
+      await note.save();
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="albaran-${note._id}.pdf"`);
+    fs.createReadStream(absolutePath).pipe(res);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// PATCH /api/deliverynote/:id/sign — sube la firma y marca el albarán como firmado
+export const signDeliveryNote = async (req, res, next) => {
+  try {
+    const { company } = req.user;
+
+    const note = await DeliveryNote.findOne({ _id: req.params.id, company });
+
+    if (!note) {
+      return next(AppError.notFound('Albarán no encontrado', 'DELIVERYNOTE_NOT_FOUND'));
+    }
+
+    if (note.signed) {
+      return next(AppError.badRequest('El albarán ya está firmado', 'DELIVERYNOTE_ALREADY_SIGNED'));
+    }
+
+    if (!req.file) {
+      return next(AppError.badRequest('Se requiere imagen de firma', 'SIGNATURE_REQUIRED'));
+    }
+
+    // procesar la imagen con Sharp: normalizar a PNG 400x200 máximo
+    const outputPath = path.join('uploads/signatures', `sig-${note._id}.png`);
+    await sharp(req.file.path)
+      .resize({ width: 400, height: 200, fit: 'inside' })
+      .png()
+      .toFile(outputPath);
+
+    // eliminar el temporal subido por multer
+    fs.unlinkSync(req.file.path);
+
+    note.signed = true;
+    note.signedAt = new Date();
+    note.signatureUrl = `/${outputPath}`;
+
+    await note.save();
+
+    // regenerar PDF con la firma incluida
+    const populated = await DeliveryNote.findById(note._id)
+      .populate('client', 'name cif email')
+      .populate('project', 'name projectCode')
+      .populate('user', 'name email');
+
+    const relativePath = await generateDeliveryNotePdf(populated);
+    note.pdfUrl = `/${relativePath}`;
+    await note.save();
+
+    res.json({ data: note });
   } catch (error) {
     next(error);
   }
