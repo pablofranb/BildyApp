@@ -2,6 +2,8 @@
 //es donde construyes y configuras la aplicación Express. Aquí es donde defines tus rutas, middlewares mi confi etc
 //aqui monto mi back
 import express from 'express';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger.js';
 import userRoutes from './routes/users.routes.js';
 import clientRoutes from './routes/client.routes.js';
 import projectRoutes from './routes/project.routes.js';
@@ -34,6 +36,8 @@ morganBody(app, {
   skip: (req, res) => res.statusCode < 400, // Solo errores
   stream: loggerStream
 });
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use('/api/user', userRoutes);
 app.use('/api/client', clientRoutes);
