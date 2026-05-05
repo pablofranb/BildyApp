@@ -1,0 +1,9 @@
+process.env.JWT_SECRET = 'test-secret-key-for-jest';
+process.env.JWT_EXPIRES_IN = '1h';
+process.env.NODE_ENV = 'test';
+process.env.PORT = '3001';
+process.env.SLACK_WEBHOOK = '';
+process.env.MAIL_HOST = 'localhost';
+process.env.MAIL_PORT = '1025';
+process.env.MAIL_USER = 'test';
+process.env.MAIL_PASS = 'test';

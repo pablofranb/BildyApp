@@ -149,7 +149,11 @@ export const registerCtrl = async (req, res) => {
       email: user.email
     });
 
-    await sendVerificationEmail(user.email, verificationCode);
+    try {
+      await sendVerificationEmail(user.email, verificationCode);
+    } catch (emailErr) {
+      console.error('Email de verificación no enviado:', emailErr.message);
+    }
 
     const accessToken = tokenSign(user);
     const refreshToken = tokenSign(user, "7d");
