@@ -2,6 +2,7 @@
 //es donde construyes y configuras la aplicación Express. Aquí es donde defines tus rutas, middlewares mi confi etc
 //aqui monto mi back
 import express from 'express';
+import mongoose from 'mongoose';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger.js';
 import userRoutes from './routes/users.routes.js';
@@ -26,6 +27,8 @@ app.get('/', (req, res) => {
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
+    db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    uptime: process.uptime(),
     timestamp: new Date().toISOString()
   });
 });
