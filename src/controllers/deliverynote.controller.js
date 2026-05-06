@@ -51,7 +51,7 @@ export const getDeliveryNotes = async (req, res, next) => {
       limit = 10
     } = req.query;
 
-    const filter = { company };
+    const filter = { company, deleted: false };
 
     if (project) filter.project = project;
     if (client) filter.client = client;
@@ -89,7 +89,7 @@ export const getDeliveryNote = async (req, res, next) => {
   try {
     const { company } = req.user;
 
-    const note = await DeliveryNote.findOne({ _id: req.params.id, company })
+    const note = await DeliveryNote.findOne({ _id: req.params.id, company, deleted: false })
       .populate('client', 'name cif email')
       .populate('project', 'name projectCode')
       .populate('user', 'name email');
@@ -130,7 +130,7 @@ export const getDeliveryNotePdf = async (req, res, next) => {
   try {
     const { company } = req.user;
 
-    const note = await DeliveryNote.findOne({ _id: req.params.id, company })
+    const note = await DeliveryNote.findOne({ _id: req.params.id, company, deleted: false })
       .populate('client', 'name cif email')
       .populate('project', 'name projectCode')
       .populate('user', 'name email');
