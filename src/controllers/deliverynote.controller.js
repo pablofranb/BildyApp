@@ -3,6 +3,7 @@ import Client from '../models/client.model.js';
 import Project from '../models/project.model.js';
 import { AppError } from '../utils/AppError.js';
 import { generateDeliveryNotePdf } from '../services/pdf.service.js';
+import { getIO } from '../config/socket.js';
 import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
@@ -27,6 +28,8 @@ export const createDeliveryNote = async (req, res, next) => {
     }
 
     const note = await DeliveryNote.create({ ...req.body, user, company });
+
+    getIO().to(company.toString()).emit('deliverynote:new', note);
 
     res.status(201).json({ data: note });
   } catch (error) {
@@ -205,6 +208,8 @@ export const signDeliveryNote = async (req, res, next) => {
     const relativePath = await generateDeliveryNotePdf(populated);
     note.pdfUrl = `/${relativePath}`;
     await note.save();
+
+    getIO().to(note.company.toString()).emit('deliverynote:signed', note);
 
     res.json({ data: note });
   } catch (error) {

@@ -1,5 +1,6 @@
 import Client from '../models/client.model.js';
 import { AppError } from '../utils/AppError.js';
+import { getIO } from '../config/socket.js';
 
 // POST /api/client — crea un nuevo cliente asociado al usuario y empresa del token
 export const createClient = async (req, res, next) => {
@@ -13,6 +14,8 @@ export const createClient = async (req, res, next) => {
 
     // guardamos el cliente con los datos del body más el user y company del token
     const client = await Client.create({ ...req.body, user, company });
+
+    getIO().to(company.toString()).emit('client:new', client);
 
     res.status(201).json({ data: client });
   } catch (error) {

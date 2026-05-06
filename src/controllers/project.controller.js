@@ -1,6 +1,7 @@
 import Project from '../models/project.model.js';
 import Client from '../models/client.model.js';
 import { AppError } from '../utils/AppError.js';
+import { getIO } from '../config/socket.js';
 
 // POST /api/project — crea un nuevo proyecto asociado al usuario y empresa del token
 export const createProject = async (req, res, next) => {
@@ -18,6 +19,8 @@ export const createProject = async (req, res, next) => {
     }
 
     const project = await Project.create({ ...req.body, user, company });
+
+    getIO().to(company.toString()).emit('project:new', project);
 
     res.status(201).json({ data: project });
   } catch (error) {
