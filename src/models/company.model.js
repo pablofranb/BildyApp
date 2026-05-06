@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-//segun mi practica  esta es la plantilla de company
 
 const companySchema = new mongoose.Schema(
   {

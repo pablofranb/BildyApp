@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// esquema base con todos los campos del cliente
 const clientBase = z.object({
   name: z.string().trim().min(1, 'El nombre es obligatorio'),
   cif: z.string().trim().min(1, 'El CIF es obligatorio').toUpperCase(),
@@ -15,8 +14,6 @@ const clientBase = z.object({
   email: z.string().trim().email('Email no válido').optional()
 });
 
-// al crear: name y cif son obligatorios
 export const createClientSchema = clientBase;
 
-// al actualizar: todos los campos son opcionales
 export const updateClientSchema = clientBase.partial();
