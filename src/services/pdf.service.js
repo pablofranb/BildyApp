@@ -1,15 +1,12 @@
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 
-const OUTPUT_DIR = path.resolve('uploads/pdfs');
-
-export const generateDeliveryNotePdf = (note) => {
+export const generateDeliveryNotePdf = (note, localSignaturePath = null) => {
   return new Promise((resolve, reject) => {
-    const filename = `albaran-${note._id}.pdf`;
-    const filepath = path.join(OUTPUT_DIR, filename);
+    const filepath = path.join(os.tmpdir(), `albaran-${note._id}.pdf`);
     const doc = new PDFDocument({ margin: 50 });
-
     const stream = fs.createWriteStream(filepath);
     doc.pipe(stream);
 
@@ -43,48 +40,39 @@ export const generateDeliveryNotePdf = (note) => {
     doc.fontSize(10).font('Helvetica').text(new Date(note.workDate).toLocaleDateString('es-ES'));
     doc.moveDown(1);
 
+    if (note.description) {
+      doc.fontSize(12).font('Helvetica-Bold').text('Descripción');
+      doc.fontSize(10).font('Helvetica').text(note.description);
+      doc.moveDown(1);
+    }
+
     doc.fontSize(12).font('Helvetica-Bold').text('Detalle');
     doc.moveDown(0.3);
 
     if (note.format === 'hours') {
       doc.fontSize(10).font('Helvetica');
-      doc.text(`Formato: Horas`);
-      doc.text(`Horas trabajadas: ${note.hours}`);
-      if (note.workers) doc.text(`Trabajadores: ${note.workers}`);
+      doc.text('Formato: Horas');
+      if (note.hours) doc.text(`Horas trabajadas: ${note.hours}`);
+      if (note.workers && note.workers.length > 0) {
+        doc.moveDown(0.3);
+        doc.font('Helvetica-Bold').text('Trabajadores:');
+        doc.font('Helvetica');
+        note.workers.forEach((w) => doc.text(`  ${w.name}: ${w.hours}h`));
+      }
     } else {
       doc.fontSize(10).font('Helvetica').text('Formato: Material');
       doc.moveDown(0.3);
-
-      const tableTop = doc.y;
-      const col = { material: 50, quantity: 300, unit: 400 };
-
-      doc.font('Helvetica-Bold');
-      doc.text('Material', col.material, tableTop);
-      doc.text('Cantidad', col.quantity, tableTop);
-      doc.text('Unidad', col.unit, tableTop);
-      doc.moveDown(0.3);
-      doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
-      doc.moveDown(0.3);
-
-      doc.font('Helvetica');
-      (note.items ?? []).forEach((item) => {
-        const y = doc.y;
-        doc.text(item.material, col.material, y);
-        doc.text(String(item.quantity), col.quantity, y);
-        doc.text(item.unit, col.unit, y);
-        doc.moveDown(0.3);
-      });
+      doc.font('Helvetica-Bold').text(`Material: ${note.material}`);
+      doc.font('Helvetica').text(`Cantidad: ${note.quantity} ${note.unit}`);
     }
 
     doc.moveDown(2);
-
     doc.fontSize(12).font('Helvetica-Bold').text('Firma');
     doc.moveDown(0.3);
 
-    if (note.signed && note.signatureUrl) {
-      const sigPath = path.resolve(note.signatureUrl.replace(/^\//, ''));
-      if (fs.existsSync(sigPath)) {
-        doc.image(sigPath, { width: 150 });
+    if (note.signed) {
+      if (localSignaturePath && fs.existsSync(localSignaturePath)) {
+        doc.image(localSignaturePath, { width: 150 });
       }
       doc.fontSize(10).font('Helvetica').text(
         `Firmado el ${new Date(note.signedAt).toLocaleString('es-ES')}`
@@ -96,8 +84,7 @@ export const generateDeliveryNotePdf = (note) => {
     }
 
     doc.end();
-
-    stream.on('finish', () => resolve(`uploads/pdfs/${filename}`));
+    stream.on('finish', () => resolve(filepath));
     stream.on('error', reject);
   });
 };

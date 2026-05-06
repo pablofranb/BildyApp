@@ -3,10 +3,11 @@ import Client from '../models/client.model.js';
 import Project from '../models/project.model.js';
 import { AppError } from '../utils/AppError.js';
 import { generateDeliveryNotePdf } from '../services/pdf.service.js';
+import { uploadImage, uploadPdf } from '../services/storage.service.js';
 import { getIO } from '../config/socket.js';
 import sharp from 'sharp';
 import fs from 'fs';
-import path from 'path';
+import os from 'os';
 
 export const createDeliveryNote = async (req, res, next) => {
   try {
@@ -139,17 +140,18 @@ export const getDeliveryNotePdf = async (req, res, next) => {
       return next(AppError.notFound('Albarán no encontrado', 'DELIVERYNOTE_NOT_FOUND'));
     }
 
-    const relativePath = await generateDeliveryNotePdf(note);
-    const absolutePath = path.resolve(relativePath);
-
-    if (!note.pdfUrl) {
-      note.pdfUrl = `/${relativePath}`;
-      await note.save();
+    if (note.pdfUrl) {
+      return res.redirect(note.pdfUrl);
     }
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="albaran-${note._id}.pdf"`);
-    fs.createReadStream(absolutePath).pipe(res);
+    const tmpPdf = await generateDeliveryNotePdf(note);
+    const pdfUrl = await uploadPdf(tmpPdf, 'bildyapp/pdfs');
+    fs.unlinkSync(tmpPdf);
+
+    note.pdfUrl = pdfUrl;
+    await note.save();
+
+    res.redirect(pdfUrl);
   } catch (error) {
     next(error);
   }
@@ -173,18 +175,19 @@ export const signDeliveryNote = async (req, res, next) => {
       return next(AppError.badRequest('Se requiere imagen de firma', 'SIGNATURE_REQUIRED'));
     }
 
-    const outputPath = path.join('uploads/signatures', `sig-${note._id}.png`);
+    const tmpSig = path.join(os.tmpdir(), `sig-${note._id}.webp`);
     await sharp(req.file.path)
-      .resize({ width: 400, height: 200, fit: 'inside' })
-      .png()
-      .toFile(outputPath);
+      .resize({ width: 800, withoutEnlargement: true })
+      .webp({ quality: 80 })
+      .toFile(tmpSig);
 
     fs.unlinkSync(req.file.path);
 
+    const signatureUrl = await uploadImage(tmpSig, 'bildyapp/signatures');
+
     note.signed = true;
     note.signedAt = new Date();
-    note.signatureUrl = `/${outputPath}`;
-
+    note.signatureUrl = signatureUrl;
     await note.save();
 
     const populated = await DeliveryNote.findById(note._id)
@@ -192,8 +195,13 @@ export const signDeliveryNote = async (req, res, next) => {
       .populate('project', 'name projectCode')
       .populate('user', 'name email');
 
-    const relativePath = await generateDeliveryNotePdf(populated);
-    note.pdfUrl = `/${relativePath}`;
+    const tmpPdf = await generateDeliveryNotePdf(populated, tmpSig);
+    fs.unlinkSync(tmpSig);
+
+    const pdfUrl = await uploadPdf(tmpPdf, 'bildyapp/pdfs');
+    fs.unlinkSync(tmpPdf);
+
+    note.pdfUrl = pdfUrl;
     await note.save();
 
     getIO().to(note.company.toString()).emit('deliverynote:signed', note);
