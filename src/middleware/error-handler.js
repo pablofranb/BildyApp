@@ -1,11 +1,26 @@
 import mongoose from 'mongoose';
 import { AppError } from '../utils/AppError.js';
+import { sendSlackNotification } from '../utils/handleLogger.js';
+
+const notifySlack = (err, req) => {
+  const message = [
+    `🚨 *Error 5XX en BildyApp API*`,
+    `*Timestamp:* ${new Date().toISOString()}`,
+    `*Método:* ${req.method}`,
+    `*Ruta:* ${req.originalUrl}`,
+    `*Mensaje:* ${err.message}`,
+    `*Stack:*\n\`\`\`${err.stack}\`\`\``
+  ].join('\n');
+
+  sendSlackNotification(message);
+};
 
 export const errorHandler = (err, req, res, next) => {
   console.error('❌ Error:', err.message);
 
   // Error creado con AppError
   if (err instanceof AppError || err.isOperational) {
+    if (err.statusCode >= 500) notifySlack(err, req);
     return res.status(err.statusCode).json({
       error: true,
       message: err.message,
@@ -82,6 +97,7 @@ export const errorHandler = (err, req, res, next) => {
   }
 
   // Error no controlado
+  notifySlack(err, req);
   const isProduction = process.env.NODE_ENV === 'production';
 
   return res.status(500).json({
