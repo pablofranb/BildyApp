@@ -13,7 +13,20 @@ const projectSchema = new mongoose.Schema(
       trim: true,
       uppercase: true
     },
-    description: {
+    address: {
+      street: { type: String, trim: true, default: null },
+      number: { type: String, trim: true, default: null },
+      postal: { type: String, trim: true, default: null },
+      city: { type: String, trim: true, default: null },
+      province: { type: String, trim: true, default: null }
+    },
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      default: null
+    },
+    notes: {
       type: String,
       trim: true,
       default: null

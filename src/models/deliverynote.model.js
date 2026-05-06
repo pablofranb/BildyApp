@@ -1,10 +1,9 @@
 import mongoose from 'mongoose';
 
-const itemSchema = new mongoose.Schema(
+const workerSchema = new mongoose.Schema(
   {
-    material: { type: String, required: true, trim: true },
-    quantity: { type: Number, required: true, min: 0 },
-    unit: { type: String, required: true, trim: true }
+    name: { type: String, required: true, trim: true },
+    hours: { type: Number, required: true, min: 0 }
   },
   { _id: false }
 );
@@ -16,10 +15,13 @@ const deliveryNoteSchema = new mongoose.Schema(
       enum: ['material', 'hours'],
       required: true
     },
-    items: [itemSchema],
-    hours: { type: Number, min: 0, default: null },
-    workers: { type: Number, min: 1, default: null },
+    description: { type: String, trim: true, default: null },
     workDate: { type: Date, required: true },
+    material: { type: String, trim: true, default: null },
+    quantity: { type: Number, min: 0, default: null },
+    unit: { type: String, trim: true, default: null },
+    hours: { type: Number, min: 0, default: null },
+    workers: { type: [workerSchema], default: [] },
     client: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Client',
@@ -43,7 +45,8 @@ const deliveryNoteSchema = new mongoose.Schema(
     signed: { type: Boolean, default: false },
     signedAt: { type: Date, default: null },
     signatureUrl: { type: String, default: null },
-    pdfUrl: { type: String, default: null }
+    pdfUrl: { type: String, default: null },
+    deleted: { type: Boolean, default: false }
   },
   {
     timestamps: true,
@@ -55,6 +58,7 @@ deliveryNoteSchema.index({ company: 1 });
 deliveryNoteSchema.index({ client: 1 });
 deliveryNoteSchema.index({ project: 1 });
 deliveryNoteSchema.index({ signed: 1 });
+deliveryNoteSchema.index({ deleted: 1 });
 
 const DeliveryNote = mongoose.model('DeliveryNote', deliveryNoteSchema);
 
