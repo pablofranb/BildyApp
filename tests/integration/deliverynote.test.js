@@ -41,7 +41,9 @@ afterAll(async () => {
 
 const materialPayload = () => ({
   format: 'material',
-  items: [{ material: 'Cemento', quantity: 10, unit: 'sacos' }],
+  material: 'Cemento',
+  quantity: 10,
+  unit: 'sacos',
   workDate: '2026-05-04',
   client: clientId,
   project: projectId
@@ -50,7 +52,7 @@ const materialPayload = () => ({
 const hoursPayload = () => ({
   format: 'hours',
   hours: 8,
-  workers: 2,
+  workers: [{ name: 'Juan García', hours: 8 }],
   workDate: '2026-05-04',
   client: clientId,
   project: projectId
@@ -152,11 +154,30 @@ describe('GET /api/deliverynote/:id', () => {
 });
 
 describe('GET /api/deliverynote/pdf/:id', () => {
-  it('genera el PDF correctamente', async () => {
+  it('genera el PDF de un albarán de materiales', async () => {
     const created = await request(app)
       .post('/api/deliverynote')
       .set('Authorization', `Bearer ${token}`)
       .send(materialPayload());
+
+    const id = created.body.data._id;
+    const res = await request(app)
+      .get(`/api/deliverynote/pdf/${id}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(/pdf/);
+  });
+
+  it('genera el PDF de un albarán de horas con trabajadores', async () => {
+    const created = await request(app)
+      .post('/api/deliverynote')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        ...hoursPayload(),
+        description: 'Jornada completa',
+        workers: [{ name: 'Ana López', hours: 6 }, { name: 'Pedro Ruiz', hours: 8 }]
+      });
 
     const id = created.body.data._id;
     const res = await request(app)

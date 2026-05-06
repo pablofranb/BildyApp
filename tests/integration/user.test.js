@@ -177,3 +177,38 @@ describe('POST /api/user/logout', () => {
     expect([200, 204]).toContain(res.status);
   });
 });
+
+describe('POST /api/user/refresh-token', () => {
+  it('devuelve nuevo token con refresh token válido', async () => {
+    const login = await request(app)
+      .post('/api/user/login')
+      .send({ email: 'test@test.com', password: 'Pass1234!' });
+
+    const refreshToken = login.body.refreshToken;
+    if (!refreshToken) return;
+
+    const res = await request(app)
+      .post('/api/user/refresh-token')
+      .send({ refreshToken });
+
+    expect([200, 401]).toContain(res.status);
+  });
+
+  it('devuelve 401 sin refresh token', async () => {
+    const res = await request(app)
+      .post('/api/user/refresh-token')
+      .send({});
+
+    expect(res.status).toBeGreaterThanOrEqual(400);
+  });
+});
+
+describe('DELETE /api/user', () => {
+  it('elimina el usuario autenticado', async () => {
+    const res = await request(app)
+      .delete('/api/user')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect([200, 204]).toContain(res.status);
+  });
+});

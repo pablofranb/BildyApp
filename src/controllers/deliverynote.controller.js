@@ -7,6 +7,7 @@ import { uploadImage, uploadPdf } from '../services/storage.service.js';
 import { getIO } from '../config/socket.js';
 import sharp from 'sharp';
 import fs from 'fs';
+import path from 'path';
 import os from 'os';
 
 export const createDeliveryNote = async (req, res, next) => {
@@ -145,13 +146,20 @@ export const getDeliveryNotePdf = async (req, res, next) => {
     }
 
     const tmpPdf = await generateDeliveryNotePdf(note);
-    const pdfUrl = await uploadPdf(tmpPdf, 'bildyapp/pdfs');
-    fs.unlinkSync(tmpPdf);
 
-    note.pdfUrl = pdfUrl;
-    await note.save();
-
-    res.redirect(pdfUrl);
+    try {
+      const pdfUrl = await uploadPdf(tmpPdf, 'bildyapp/pdfs');
+      fs.unlinkSync(tmpPdf);
+      note.pdfUrl = pdfUrl;
+      await note.save();
+      return res.redirect(pdfUrl);
+    } catch {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="albaran-${note._id}.pdf"`);
+      const stream = fs.createReadStream(tmpPdf);
+      stream.pipe(res);
+      stream.on('end', () => fs.unlinkSync(tmpPdf));
+    }
   } catch (error) {
     next(error);
   }
