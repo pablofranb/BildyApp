@@ -6,7 +6,8 @@ module.exports = {
   collectCoverageFrom: [
     'src/**/*.js',
     '!src/index.js',
-    '!src/config/db.js'
+    '!src/config/db.js',
+    '!src/config/socket.js'
   ],
   coverageThreshold: {
     global: { lines: 70 }

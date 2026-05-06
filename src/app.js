@@ -1,6 +1,3 @@
-
-//es donde construyes y configuras la aplicación Express. Aquí es donde defines tus rutas, middlewares mi confi etc
-//aqui monto mi back
 import express from 'express';
 import mongoose from 'mongoose';
 import swaggerUi from 'swagger-ui-express';
@@ -13,17 +10,15 @@ import path from 'path';
 import morganBody from 'morgan-body';
 import { loggerStream } from './utils/handleLogger.js';
 import { errorHandler } from './middleware/error-handler.js';
+
 const app = express();
 
-//para que entienda json en los campos 
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.json({
-    message: 'BildyApp API funcionando'
-  });
+  res.json({ message: 'BildyApp API funcionando' });
 });
-//creo  una ruta de prueba para ver q funciona
+
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -33,10 +28,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Después de express.json(), antes de las rutas
 morganBody(app, {
   noColors: true,
-  skip: (req, res) => res.statusCode < 400, // Solo errores
+  skip: (req, res) => res.statusCode < 400,
   stream: loggerStream
 });
 
@@ -51,4 +45,3 @@ app.use('/uploads', express.static(path.resolve('uploads')));
 app.use(errorHandler);
 
 export default app;
-

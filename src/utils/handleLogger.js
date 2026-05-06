@@ -1,7 +1,6 @@
-// src/utils/handleLogger.js
 import { IncomingWebhook } from '@slack/webhook';
 
-const webhook = process.env.SLACK_WEBHOOK 
+const webhook = process.env.SLACK_WEBHOOK
   ? new IncomingWebhook(process.env.SLACK_WEBHOOK)
   : null;
 

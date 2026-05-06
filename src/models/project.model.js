@@ -18,20 +18,16 @@ const projectSchema = new mongoose.Schema(
       trim: true,
       default: null
     },
-    // cliente al que pertenece el proyecto
     client: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Client',
       required: true
     },
-    // usuario que creó el proyecto
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true
     },
-    // empresa a la que pertenece el proyecto
-    // todas las consultas filtran por este campo para aislar datos entre empresas
     company: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Company',
@@ -52,7 +48,6 @@ const projectSchema = new mongoose.Schema(
   }
 );
 
-// el código de proyecto es único dentro de la misma compañía, no globalmente
 projectSchema.index({ projectCode: 1, company: 1 }, { unique: true });
 projectSchema.index({ company: 1 });
 projectSchema.index({ client: 1 });

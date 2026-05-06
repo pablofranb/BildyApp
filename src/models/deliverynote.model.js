@@ -16,15 +16,10 @@ const deliveryNoteSchema = new mongoose.Schema(
       enum: ['material', 'hours'],
       required: true
     },
-    // campos para format: 'material'
     items: [itemSchema],
-    // campos para format: 'hours'
     hours: { type: Number, min: 0, default: null },
     workers: { type: Number, min: 1, default: null },
-
     workDate: { type: Date, required: true },
-
-    // referencias — todas las consultas filtran por company para aislar datos entre empresas
     client: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Client',
@@ -45,7 +40,6 @@ const deliveryNoteSchema = new mongoose.Schema(
       ref: 'Company',
       required: true
     },
-
     signed: { type: Boolean, default: false },
     signedAt: { type: Date, default: null },
     signatureUrl: { type: String, default: null },

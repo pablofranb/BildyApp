@@ -3,7 +3,6 @@ import Client from '../models/client.model.js';
 import { AppError } from '../utils/AppError.js';
 import { getIO } from '../config/socket.js';
 
-// POST /api/project — crea un nuevo proyecto asociado al usuario y empresa del token
 export const createProject = async (req, res, next) => {
   try {
     const { _id: user, company } = req.user;
@@ -12,7 +11,6 @@ export const createProject = async (req, res, next) => {
       return next(AppError.badRequest('El usuario no tiene empresa asociada', 'NO_COMPANY'));
     }
 
-    // verificamos que el cliente existe y pertenece a la misma empresa
     const client = await Client.findOne({ _id: req.body.client, company, deleted: false });
     if (!client) {
       return next(AppError.notFound('Cliente no encontrado', 'CLIENT_NOT_FOUND'));
@@ -28,7 +26,6 @@ export const createProject = async (req, res, next) => {
   }
 };
 
-// GET /api/project — lista los proyectos activos de la empresa con paginación y filtros
 export const getProjects = async (req, res, next) => {
   try {
     const { company } = req.user;
@@ -38,7 +35,6 @@ export const getProjects = async (req, res, next) => {
 
     if (name) filter.name = { $regex: name, $options: 'i' };
     if (client) filter.client = client;
-    // active puede llegar como string 'true'/'false' desde la query
     if (active !== undefined) filter.active = active === 'true';
 
     const skip = (Number(page) - 1) * Number(limit);
@@ -62,7 +58,6 @@ export const getProjects = async (req, res, next) => {
   }
 };
 
-// GET /api/project/archived — lista los proyectos eliminados con soft delete
 export const getArchivedProjects = async (req, res, next) => {
   try {
     const { company } = req.user;
@@ -75,12 +70,10 @@ export const getArchivedProjects = async (req, res, next) => {
   }
 };
 
-// GET /api/project/:id — obtiene un proyecto por id
 export const getProject = async (req, res, next) => {
   try {
     const { company } = req.user;
 
-    // buscamos por id Y por company: si el proyecto existe pero es de otra empresa, devuelve 404
     const project = await Project.findOne({ _id: req.params.id, company });
 
     if (!project) {
@@ -93,12 +86,10 @@ export const getProject = async (req, res, next) => {
   }
 };
 
-// PUT /api/project/:id — actualiza los datos de un proyecto
 export const updateProject = async (req, res, next) => {
   try {
     const { company } = req.user;
 
-    // si se cambia el cliente, verificamos que el nuevo cliente pertenece a la misma empresa
     if (req.body.client) {
       const client = await Client.findOne({ _id: req.body.client, company, deleted: false });
       if (!client) {
@@ -122,8 +113,6 @@ export const updateProject = async (req, res, next) => {
   }
 };
 
-// DELETE /api/project/:id — borra un proyecto
-// si ?soft=true hace soft delete (marca deleted=true), si no hace hard delete
 export const deleteProject = async (req, res, next) => {
   try {
     const { company } = req.user;
@@ -148,12 +137,10 @@ export const deleteProject = async (req, res, next) => {
   }
 };
 
-// PATCH /api/project/:id/restore — restaura un proyecto archivado
 export const restoreProject = async (req, res, next) => {
   try {
     const { company } = req.user;
 
-    // solo encuentra el proyecto si está archivado (deleted: true)
     const project = await Project.findOneAndUpdate(
       { _id: req.params.id, company, deleted: true },
       { deleted: false },

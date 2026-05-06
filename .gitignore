@@ -2,3 +2,4 @@ node_modules
 .env
 upload/.env
 dev-notes.md
+uploads/

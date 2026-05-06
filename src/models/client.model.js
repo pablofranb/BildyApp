@@ -31,14 +31,11 @@ const clientSchema = new mongoose.Schema(
       lowercase: true,
       default: null
     },
-    // usuario que creó el cliente
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true
     },
-    // empresa a la que pertenece el cliente
-    // todas las consultas filtran por este campo para aislar datos entre empresas
     company: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Company',
@@ -55,7 +52,6 @@ const clientSchema = new mongoose.Schema(
   }
 );
 
-// índice compuesto: el CIF es único dentro de la misma compañía, no globalmente
 clientSchema.index({ cif: 1, company: 1 }, { unique: true });
 clientSchema.index({ company: 1 });
 clientSchema.index({ deleted: 1 });

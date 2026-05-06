@@ -4,10 +4,6 @@ import path from 'path';
 
 const OUTPUT_DIR = path.resolve('uploads/pdfs');
 
-/**
- * Genera el PDF de un albarán y lo guarda en disco.
- * Devuelve la ruta relativa del archivo generado.
- */
 export const generateDeliveryNotePdf = (note) => {
   return new Promise((resolve, reject) => {
     const filename = `albaran-${note._id}.pdf`;
@@ -17,13 +13,11 @@ export const generateDeliveryNotePdf = (note) => {
     const stream = fs.createWriteStream(filepath);
     doc.pipe(stream);
 
-    // Cabecera
     doc.fontSize(20).font('Helvetica-Bold').text('ALBARÁN', { align: 'center' });
     doc.moveDown(0.5);
     doc.fontSize(10).font('Helvetica').text(`Nº: ${note._id}`, { align: 'center' });
     doc.moveDown(1.5);
 
-    // Datos de empresa y cliente
     doc.fontSize(12).font('Helvetica-Bold').text('Empresa');
     doc.fontSize(10).font('Helvetica').text(`ID: ${note.company}`);
     doc.moveDown(0.5);
@@ -45,12 +39,10 @@ export const generateDeliveryNotePdf = (note) => {
     }
     doc.moveDown(1);
 
-    // Fecha de trabajo
     doc.fontSize(12).font('Helvetica-Bold').text('Fecha de trabajo');
     doc.fontSize(10).font('Helvetica').text(new Date(note.workDate).toLocaleDateString('es-ES'));
     doc.moveDown(1);
 
-    // Contenido según formato
     doc.fontSize(12).font('Helvetica-Bold').text('Detalle');
     doc.moveDown(0.3);
 
@@ -63,7 +55,6 @@ export const generateDeliveryNotePdf = (note) => {
       doc.fontSize(10).font('Helvetica').text('Formato: Material');
       doc.moveDown(0.3);
 
-      // Cabecera de tabla de materiales
       const tableTop = doc.y;
       const col = { material: 50, quantity: 300, unit: 400 };
 
@@ -87,7 +78,6 @@ export const generateDeliveryNotePdf = (note) => {
 
     doc.moveDown(2);
 
-    // Firma
     doc.fontSize(12).font('Helvetica-Bold').text('Firma');
     doc.moveDown(0.3);
 

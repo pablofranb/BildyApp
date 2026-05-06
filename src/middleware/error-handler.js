@@ -18,7 +18,6 @@ const notifySlack = (err, req) => {
 export const errorHandler = (err, req, res, next) => {
   console.error('❌ Error:', err.message);
 
-  // Error creado con AppError
   if (err instanceof AppError || err.isOperational) {
     if (err.statusCode >= 500) notifySlack(err, req);
     return res.status(err.statusCode).json({
@@ -29,7 +28,6 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Error de validación de Mongoose
   if (err instanceof mongoose.Error.ValidationError) {
     const details = Object.values(err.errors).map(e => ({
       field: e.path,
@@ -44,7 +42,6 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Error de Cast (id inválido)
   if (err instanceof mongoose.Error.CastError) {
     return res.status(400).json({
       error: true,
@@ -53,7 +50,6 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Error de duplicado
   if (err.code === 11000) {
     const field = Object.keys(err.keyValue || {})[0];
 
@@ -64,7 +60,6 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Error de Zod
   if (err.name === 'ZodError') {
     const details = err.errors.map(e => ({
       field: e.path.join('.'),
@@ -79,7 +74,6 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Error de Multer
   if (err.code === 'LIMIT_FILE_SIZE') {
     return res.status(400).json({
       error: true,
@@ -96,7 +90,6 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Error no controlado
   notifySlack(err, req);
   const isProduction = process.env.NODE_ENV === 'production';
 

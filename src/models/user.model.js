@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema(
-  {//campos
+  {
     email: {
       type: String,
       required: true,
-      trim: true, //elimino los espacios 
+      trim: true,
       lowercase: true
     },
     password: {
@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
       trim: true,
-      default: null //sino mando nada me lo ponen null
+      default: null
     },
     lastName: {
       type: String,
@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['admin', 'guest'], //mis opciones
+      enum: ['admin', 'guest'],
       default: 'admin'
     },
     status: {
@@ -47,8 +47,8 @@ const userSchema = new mongoose.Schema(
       default: 3
     },
     company: {
-      type: mongoose.Schema.Types.ObjectId, //voy a guardar el id de una empresa para relacionarlos no el objeto entero
-      ref: 'Company',//del modelo company
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Company',
       default: null
     },
     address: {
@@ -62,35 +62,28 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
-    //para comprobar  qfunciona y es valido, parte del refresh
     refreshToken: {
-        type: String,
-        default: null
-},
+      type: String,
+      default: null
+    },
   },
-  
-  //mis reglas de manejo
   {
-    timestamps: true, //para que salga cuando lo añado o actualizo
-    versionKey: false, //quito el campo _v de versiones
-    toJSON: { virtuals: true }, //cuando pase a json añada  las virtuals 
-    toObject: { virtuals: true }//igual pero al convertir a objeto
+    timestamps: true,
+    versionKey: false,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
   }
-  
 );
 
-//no se guarda en la base de datos pero me lo calcula al vuelo con el nombre y apellido para tener el nombre completo, me lo piden en la practcia
 userSchema.virtual('fullName').get(function () {
   return `${this.name || ''} ${this.lastName || ''}`.trim();
-}); 
+});
 
-//indices para  las consultas por email, company, status y role
 userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ company: 1 });
 userSchema.index({ status: 1 });
 userSchema.index({ role: 1 });
 
-//convierto el esquema a modelo( como decir mi clase)
 const User = mongoose.model('User', userSchema);
 
 export default User;
