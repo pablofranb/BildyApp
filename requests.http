@@ -1,47 +1,55 @@
-### health
+### HEALTH
 GET http://localhost:3000/health
 
 ###
 
-### 1) register usuario 1
+### ─────────────────────────────────────
+### USUARIOS
+### ─────────────────────────────────────
+
+### 1) Registrar usuario
 POST http://localhost:3000/api/user/register
 Content-Type: application/json
 
 {
-  "email": "testaaaaaaa@bildy.com",
-  "password": "12345678"
+  "email": "pablo@bildy.com",
+  "password": "Pass1234!"
 }
+
 ###
 
-### 2) validation usuario 1
-### usa el accessToken del register
-### usa el verificationCode real que veas en la base de datos
+### 2) Validar email (usa el verificationCode del registro)
 PUT http://localhost:3000/api/user/validation
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjIyMDYsImV4cCI6MTc3NTU2OTQwNn0.Lpu2ejTWjux_SE0266A0IJ-U8iSWE1WjOlsL53uF_ZQ
+Authorization: Bearer ACCESS_TOKEN
 
 {
-  "code": "859224"
+  "code": "123456"
 }
 
 ###
 
-### 3) login usuario 1
+### 3) Login
 POST http://localhost:3000/api/user/login
 Content-Type: application/json
 
 {
-  "email": "testaaaaaaa@bildy.com",
-  "password": "12345678"
+  "email": "pablo@bildy.com",
+  "password": "Pass1234!"
 }
 
 ###
 
-### 4) onboarding datos personales usuario 1
-### si tu endpoint final es PUT /api/user/register autenticado, usa este
+### 4) Obtener perfil propio
+GET http://localhost:3000/api/user/me
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### 5) Actualizar datos personales
 PUT http://localhost:3000/api/user/me
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjIyMDYsImV4cCI6MTc3NTU2OTQwNn0.Lpu2ejTWjux_SE0266A0IJ-U8iSWE1WjOlsL53uF_ZQ
+Authorization: Bearer ACCESS_TOKEN
 
 {
   "name": "Pablo",
@@ -51,10 +59,10 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZ
 
 ###
 
-### 5) onboarding company usuario 1 -> CIF nuevo, debe quedar admin
+### 6) Crear o actualizar empresa
 PATCH http://localhost:3000/api/user/company
 Content-Type: application/json
-Authorization: Bearer  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjIyMDYsImV4cCI6MTc3NTU2OTQwNn0.Lpu2ejTWjux_SE0266A0IJ-U8iSWE1WjOlsL53uF_ZQ
+Authorization: Bearer ACCESS_TOKEN
 
 {
   "name": "Bildy Obras SL",
@@ -71,185 +79,301 @@ Authorization: Bearer  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRk
 
 ###
 
-### 6) get me usuario 1
-GET http://localhost:3000/api/user/me
-Authorization: Bearer  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjIyMDYsImV4cCI6MTc3NTU2OTQwNn0.Lpu2ejTWjux_SE0266A0IJ-U8iSWE1WjOlsL53uF_ZQ
+### 7) Subir logo empresa (usar Postman/Thunder Client con form-data)
+PATCH http://localhost:3000/api/user/logo
+Authorization: Bearer ACCESS_TOKEN
 
 ###
 
-### 7) refresh usuario 1
-POST http://localhost:3000/api/user/refresh
-Content-Type: application/json
-
-{
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjI0MDcsImV4cCI6MTc3NTU2OTYwN30.pZJ9CHaQa4nh2xLAw_gxeN_rGyKND8Mje8vCjZ8Tido"
-}
-
-###
-
-### 8) logout usuario 1
-POST http://localhost:3000/api/user/logout
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiZ3Vlc3QiLCJpYXQiOjE3NzU1NjM3OTksImV4cCI6MTc3NTU3MDk5OX0.kXSkhWxUgm-QOfekLlyg-jsxekmWfOTB_OgBPh8i0jM
-
-###
-
-### 9) refresh después de logout -> debe fallar 401
-POST http://localhost:3000/api/user/refresh
-Content-Type: application/json
-
-{
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjI0MDcsImV4cCI6MTc3NTU2OTYwN30.pZJ9CHaQa4nh2xLAw_gxeN_rGyKND8Mje8vCjZ8Tido"
-}
-
-###
-
-### 10) login usuario 1 otra vez para seguir probando
-POST http://localhost:3000/api/user/login
-Content-Type: application/json
-
-{
-  "email": "testaaaaaaa@bildy.com",
-  "password": "12345678"
-}
-
-###
-
-### 11) cambiar contraseña usuario 1
+### 8) Cambiar contraseña
 PUT http://localhost:3000/api/user/password
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiZ3Vlc3QiLCJpYXQiOjE3NzU1NjM4NzEsImV4cCI6MTc3NTU3MTA3MX0.JX7DMHSgDec1_wn254EMseqNXHOFWy2OKf3lS_ezDkk
+Authorization: Bearer ACCESS_TOKEN
 
 {
-  "currentPassword": "12345678",
-  "newPassword": "87654321"
+  "oldPassword": "Pass1234!",
+  "newPassword": "NuevoPass1!"
 }
 
 ###
 
-### 12) login con contraseña nueva -> debe funcionar
-POST http://localhost:3000/api/user/login
+### 9) Refresh token
+POST http://localhost:3000/api/user/refresh-token
 Content-Type: application/json
 
 {
-  "email": "testaaaaaaa@bildy.com",
-  "password": "87654321"
+  "refreshToken": "REFRESH_TOKEN"
 }
 
 ###
 
-### 13) login con contraseña antigua -> debe fallar
-POST http://localhost:3000/api/user/login
-Content-Type: application/json
-
-{
-  "email": "testaaaaaaa@bildy.com",
-  "password": "12345678"
-}
+### 10) Logout
+POST http://localhost:3000/api/user/logout
+Authorization: Bearer ACCESS_TOKEN
 
 ###
 
-### 14) register usuario 2
-POST http://localhost:3000/api/user/register
-Content-Type: application/json
-
-{
-  "email": "test2a@bildy.com",
-  "password": "12345678"
-}
+### 11) Soft delete usuario
+DELETE http://localhost:3000/api/user?soft=true
+Authorization: Bearer ACCESS_TOKEN
 
 ###
 
-### 15) login usuario 2
-POST http://localhost:3000/api/user/login
-Content-Type: application/json
-
-{
-  "email": "test2a@bildy.com",
-  "password": "12345678"
-}
+### 12) Hard delete usuario
+DELETE http://localhost:3000/api/user
+Authorization: Bearer ACCESS_TOKEN
 
 ###
 
-### 16) onboarding company usuario 2 -> mismo CIF, debe pasar a guest
-PATCH http://localhost:3000/api/user/company
+### ─────────────────────────────────────
+### CLIENTES
+### ─────────────────────────────────────
+
+### 13) Crear cliente
+POST http://localhost:3000/api/client
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZjVkYWZlOTY5NjY2ZjkzYTdhNjUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjQzOTQsImV4cCI6MTc3NTU3MTU5NH0.ILOof8S6jn4ZSgN8I1Um8ZwZAhRX3VulGWwBxxlAoNE
+Authorization: Bearer ACCESS_TOKEN
 
 {
-  "name": "Bildy Obras SL",
-  "cif": "B12345678",
+  "name": "Constructora ABC",
+  "cif": "A12345678",
+  "email": "contacto@abc.com",
+  "phone": "612345678",
   "address": {
-    "street": "Calle Mayor",
-    "number": "12",
-    "postal": "28001",
+    "street": "Calle Gran Vía",
+    "number": "45",
+    "postal": "28013",
     "city": "Madrid",
     "province": "Madrid"
-  },
-  "isFreelance": false
+  }
 }
 
 ###
 
-### 17) get me usuario 2 -> comprobar role guest
-GET http://localhost:3000/api/user/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZjVkYWZlOTY5NjY2ZjkzYTdhNjUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjQzOTQsImV4cCI6MTc3NTU3MTU5NH0.ILOof8S6jn4ZSgN8I1Um8ZwZAhRX3VulGWwBxxlAoNE
+### 14) Listar clientes (con paginación y filtros)
+GET http://localhost:3000/api/client?page=1&limit=10&sort=-createdAt
+Authorization: Bearer ACCESS_TOKEN
 
 ###
 
-PUT http://localhost:3000/api/user/69d4edde33b287351876ea75
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZjVkYWZlOTY5NjY2ZjkzYTdhNjUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjQzOTQsImV4cCI6MTc3NTU3MTU5NH0.ILOof8S6jn4ZSgN8I1Um8ZwZAhRX3VulGWwBxxlAoNE
-
-{
-  "name": "Prueba"
-}
-###
-
-### 19) logo company usuario 1
-### esta parte normalmente mejor en Postman o Thunder Client
-### body form-data, campo logo, tipo File
-PATCH http://localhost:3000/api/user/logo
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiZ3Vlc3QiLCJpYXQiOjE3NzU1NjQwMzgsImV4cCI6MTc3NTU3MTIzOH0.4-p3rF1U4ACOknywdvZtRrqmC10oZMLsGdhhP18ea-w
-Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
-
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="logo"; filename="logo.png"
-Content-Type: image/png
-
-< ./logo.png
-------WebKitFormBoundary7MA4YWxkTrZu0gW--
+### 15) Listar clientes filtrados por nombre
+GET http://localhost:3000/api/client?name=Constructora
+Authorization: Bearer ACCESS_TOKEN
 
 ###
 
-### 20) get me usuario 1 -> comprobar company.logo
-GET http://localhost:3000/api/user/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZWRkZTMzYjI4NzM1MTg3NmVhNzUiLCJyb2xlIjoiZ3Vlc3QiLCJpYXQiOjE3NzU1NjQwMzgsImV4cCI6MTc3NTU3MTIzOH0.4-p3rF1U4ACOknywdvZtRrqmC10oZMLsGdhhP18ea-w
+### 16) Obtener cliente por id
+GET http://localhost:3000/api/client/CLIENT_ID
+Authorization: Bearer ACCESS_TOKEN
 
 ###
 
-### 21) soft delete usuario 2
-DELETE http://localhost:3000/api/user?soft=true
-Authorization: Bearer ACCESS_TOKEN_USER_2
-
-###
-
-### 22) get me usuario 2 -> comprobar deleted true
-GET http://localhost:3000/api/user/me
-Authorization: Bearer ACCESS_TOKEN_USER_2
-
-###
-
-### 23) hard delete usuario 2
-### si quieres probar hard delete, usa otro usuario de prueba distinto
-DELETE http://localhost:3000/api/user
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0ZjRhYWZlOTY5NjY2ZjkzYTdhMmMiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzU1NjM5NTQsImV4cCI6MTc3NTU3MTE1NH0.O6c0qbXwwApDQy0YPoReVZlYM5JWvIvggGb7EfYaKjA
-
-###
-
-### 24) login usuario 2 después de hard delete -> debe fallar
-POST http://localhost:3000/api/user/login
+### 17) Actualizar cliente
+PUT http://localhost:3000/api/client/CLIENT_ID
 Content-Type: application/json
+Authorization: Bearer ACCESS_TOKEN
 
 {
-  "email": "test2a@bildy.com",
-  "password": "12345678"
+  "name": "Constructora ABC Actualizada",
+  "phone": "699999999"
 }
+
+###
+
+### 18) Soft delete cliente
+DELETE http://localhost:3000/api/client/CLIENT_ID?soft=true
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### 19) Hard delete cliente
+DELETE http://localhost:3000/api/client/CLIENT_ID
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### 20) Listar clientes archivados
+GET http://localhost:3000/api/client/archived
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### 21) Restaurar cliente archivado
+PATCH http://localhost:3000/api/client/CLIENT_ID/restore
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### ─────────────────────────────────────
+### PROYECTOS
+### ─────────────────────────────────────
+
+### 22) Crear proyecto
+POST http://localhost:3000/api/project
+Content-Type: application/json
+Authorization: Bearer ACCESS_TOKEN
+
+{
+  "name": "Reforma Oficinas Centro",
+  "projectCode": "PRJ-001",
+  "client": "CLIENT_ID",
+  "email": "obra@abc.com",
+  "notes": "Reforma completa de la planta baja",
+  "address": {
+    "street": "Calle Alcalá",
+    "number": "100",
+    "postal": "28009",
+    "city": "Madrid",
+    "province": "Madrid"
+  }
+}
+
+###
+
+### 23) Listar proyectos (con paginación y filtros)
+GET http://localhost:3000/api/project?page=1&limit=10&sort=-createdAt
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### 24) Filtrar proyectos por cliente y estado
+GET http://localhost:3000/api/project?client=CLIENT_ID&active=true
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### 25) Obtener proyecto por id
+GET http://localhost:3000/api/project/PROJECT_ID
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### 26) Actualizar proyecto
+PUT http://localhost:3000/api/project/PROJECT_ID
+Content-Type: application/json
+Authorization: Bearer ACCESS_TOKEN
+
+{
+  "name": "Reforma Oficinas Centro - Fase 2",
+  "notes": "Incluye planta primera"
+}
+
+###
+
+### 27) Soft delete proyecto
+DELETE http://localhost:3000/api/project/PROJECT_ID?soft=true
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### 28) Hard delete proyecto
+DELETE http://localhost:3000/api/project/PROJECT_ID
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### 29) Listar proyectos archivados
+GET http://localhost:3000/api/project/archived
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### 30) Restaurar proyecto archivado
+PATCH http://localhost:3000/api/project/PROJECT_ID/restore
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### ─────────────────────────────────────
+### ALBARANES
+### ─────────────────────────────────────
+
+### 31) Crear albarán de materiales
+POST http://localhost:3000/api/deliverynote
+Content-Type: application/json
+Authorization: Bearer ACCESS_TOKEN
+
+{
+  "format": "material",
+  "description": "Entrega de materiales para cimentación",
+  "material": "Cemento Portland",
+  "quantity": 50,
+  "unit": "sacos",
+  "workDate": "2026-05-06",
+  "client": "CLIENT_ID",
+  "project": "PROJECT_ID"
+}
+
+###
+
+### 32) Crear albarán de horas
+POST http://localhost:3000/api/deliverynote
+Content-Type: application/json
+Authorization: Bearer ACCESS_TOKEN
+
+{
+  "format": "hours",
+  "description": "Jornada de albañilería",
+  "hours": 8,
+  "workers": [
+    { "name": "Juan García", "hours": 8 },
+    { "name": "Pedro López", "hours": 6 }
+  ],
+  "workDate": "2026-05-06",
+  "client": "CLIENT_ID",
+  "project": "PROJECT_ID"
+}
+
+###
+
+### 33) Listar albaranes (con paginación y filtros)
+GET http://localhost:3000/api/deliverynote?page=1&limit=10&sort=-workDate
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### 34) Filtrar albaranes por proyecto, formato y firmado
+GET http://localhost:3000/api/deliverynote?project=PROJECT_ID&format=hours&signed=false
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### 35) Filtrar albaranes por rango de fechas
+GET http://localhost:3000/api/deliverynote?from=2026-01-01&to=2026-12-31
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### 36) Obtener albarán por id (con populate)
+GET http://localhost:3000/api/deliverynote/NOTE_ID
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### 37) Descargar PDF de albarán
+GET http://localhost:3000/api/deliverynote/pdf/NOTE_ID
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### 38) Firmar albarán (usar Postman/Thunder Client con form-data)
+### Campo: signature (tipo File, imagen PNG/JPG)
+PATCH http://localhost:3000/api/deliverynote/NOTE_ID/sign
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### 39) Eliminar albarán (solo si no está firmado)
+DELETE http://localhost:3000/api/deliverynote/NOTE_ID
+Authorization: Bearer ACCESS_TOKEN
+
+###
+
+### ─────────────────────────────────────
+### SWAGGER
+### ─────────────────────────────────────
+
+### 40) Documentación Swagger
+GET http://localhost:3000/api-docs/
+
+###
