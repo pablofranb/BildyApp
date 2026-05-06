@@ -184,12 +184,10 @@ export const signDeliveryNote = async (req, res, next) => {
     }
 
     const tmpSig = path.join(os.tmpdir(), `sig-${note._id}.webp`);
-    await sharp(req.file.path)
+    await sharp(req.file.buffer)
       .resize({ width: 800, withoutEnlargement: true })
       .webp({ quality: 80 })
       .toFile(tmpSig);
-
-    fs.unlinkSync(req.file.path);
 
     const signatureUrl = await uploadImage(tmpSig, 'bildyapp/signatures');
 
