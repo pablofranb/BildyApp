@@ -1,19 +1,18 @@
 const checkRol = (roles) => (req, res, next) => {
   try {
-    const { user } = req;
     if (!req.user) {
-      return;
+      return res.status(403).json({ error: 'FORBIDDEN' });
     }
 
-    const userRol = user.role;
-    const checkValueRol = roles.includes(userRol);
+    const checkValueRol = roles.includes(req.user.role);
 
     if (!checkValueRol) {
-      return;
+      return res.status(403).json({ error: 'FORBIDDEN' });
     }
 
     next();
   } catch (err) {
+    return res.status(403).json({ error: 'FORBIDDEN' });
   }
 };
 
