@@ -10,6 +10,18 @@ const createTransporter = () =>
     },
   });
 
+export const sendInvitationEmail = async (email) => {
+  const transporter = createTransporter();
+
+  await transporter.sendMail({
+    from: `"BildyApp" <${process.env.MAIL_USER}>`,
+    to: email,
+    subject: 'Te han invitado a BildyApp',
+    text: 'Has sido invitado a unirte a una empresa en BildyApp. Regístrate para aceptar la invitación.',
+    html: `<p>Has sido invitado a unirte a una empresa en <strong>BildyApp</strong>. Regístrate para aceptar la invitación.</p>`,
+  });
+};
+
 export const sendVerificationEmail = async (email, code) => {
   const transporter = createTransporter();
 

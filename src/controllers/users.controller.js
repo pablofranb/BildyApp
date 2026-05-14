@@ -4,7 +4,7 @@ import { tokenSign, verifyToken } from '../utils/handleJwt.js';
 import Company from "../models/company.model.js";
 import { changePasswordSchema } from '../validators/user.validator.js';
 import { notificationService } from '../services/notification.service.js';
-import { sendVerificationEmail } from '../services/email.service.js';
+import { sendVerificationEmail, sendInvitationEmail } from '../services/email.service.js';
 
 export const getUsers = async (req, res, next) => {
   try {
@@ -366,6 +366,31 @@ export const deleteMeCtrl = async (req, res) => {
     return res.status(200).json({ message: 'USER_DELETED' });
   } catch (error) {
     return res.status(500).json({ error: 'ERROR_DELETING_USER' });
+  }
+};
+
+export const inviteUserCtrl = async (req, res) => {
+  try {
+    const { email, role } = req.body;
+
+    if (role !== 'guest') {
+      return res.status(403).json({ error: 'ONLY_GUEST_INVITATIONS_ALLOWED' });
+    }
+
+    const existingUser = await User.findOne({ email, company: req.user.company });
+    if (existingUser) {
+      return res.status(409).json({ error: 'EMAIL_ALREADY_IN_COMPANY' });
+    }
+
+    try {
+      await sendInvitationEmail(email);
+    } catch (emailErr) {
+      console.error('Email de invitación no enviado:', emailErr.message);
+    }
+
+    return res.status(201).json({ message: 'Invitación enviada' });
+  } catch (error) {
+    return res.status(500).json({ error: 'ERROR_INVITING_USER' });
   }
 };
 

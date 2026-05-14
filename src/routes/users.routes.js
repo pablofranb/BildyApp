@@ -16,7 +16,8 @@ import {
   changePasswordCtrl,
   deleteMeCtrl,
   uploadLogoCtrl,
-  updateMeCtrl
+  updateMeCtrl,
+  inviteUserCtrl
 } from '../controllers/users.controller.js';
 
 import authMiddleware from "../middleware/auth.middleware.js";
@@ -26,7 +27,8 @@ import {
   registerSchema,
   loginSchema,
   validationCodeSchema,
-  changePasswordSchema
+  changePasswordSchema,
+  inviteSchema
 } from "../validators/user.validator.js";
 
 const router = Router();
@@ -267,6 +269,37 @@ router.patch('/logo', authMiddleware, upload.single('logo'), uploadLogoCtrl);
  *         description: Empresa actualizada
  */
 router.patch('/company', authMiddleware, updateCompanyCtrl);
+
+/**
+ * @swagger
+ * /user/invite:
+ *   post:
+ *     summary: Invitar un usuario guest a la empresa (solo admin)
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, role]
+ *             properties:
+ *               email:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [guest]
+ *     responses:
+ *       201:
+ *         description: Invitación enviada
+ *       403:
+ *         description: Sin permisos o rol solicitado no permitido
+ *       409:
+ *         description: El email ya existe en la empresa
+ */
+router.post('/invite', authMiddleware, checkRol(['admin']), validate(inviteSchema), inviteUserCtrl);
 
 /**
  * @swagger

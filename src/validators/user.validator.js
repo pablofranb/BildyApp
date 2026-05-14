@@ -30,3 +30,8 @@ export const changePasswordSchema = z.object({
   message: "NEW_PASSWORD_MUST_BE_DIFFERENT",
   path: ["newPassword"]
 });
+
+export const inviteSchema = z.object({
+  email: z.string().trim().email("Email no válido").transform(e => e.toLowerCase()),
+  role: z.string().min(1, "El rol es obligatorio"),
+});
