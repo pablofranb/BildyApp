@@ -3,6 +3,9 @@ import request from 'supertest';
 import app from '../../src/app.js';
 import { connectDB, disconnectDB, clearDB } from '../db.js';
 import { createTestUser } from '../helpers.js';
+import User from '../../src/models/user.model.js';
+import { encrypt } from '../../src/utils/handlePassword.js';
+import { tokenSign } from '../../src/utils/handleJwt.js';
 
 let token;
 let userId;
@@ -210,5 +213,53 @@ describe('DELETE /api/user', () => {
       .set('Authorization', `Bearer ${token}`);
 
     expect([200, 204]).toContain(res.status);
+  });
+});
+
+describe('POST /api/user/invite', () => {
+  it('devuelve 403 si el usuario tiene rol guest', async () => {
+    const password = await encrypt('Pass1234!');
+    const guestUser = await User.create({
+      email: 'guest@bildyapp.com',
+      password,
+      role: 'guest',
+      status: 'verified',
+    });
+    const guestToken = tokenSign(guestUser);
+
+    const res = await request(app)
+      .post('/api/user/invite')
+      .set('Authorization', `Bearer ${guestToken}`)
+      .send({ email: 'nuevo@example.com', role: 'guest' });
+
+    expect(res.status).toBe(403);
+  });
+
+  it('devuelve 403 si se intenta invitar con rol admin', async () => {
+    const res = await request(app)
+      .post('/api/user/invite')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ email: 'nuevo@example.com', role: 'admin' });
+
+    expect(res.status).toBe(403);
+  });
+
+  it('devuelve 409 si el email ya existe en la empresa', async () => {
+    const { company } = await createTestUser().catch(() => ({ company: null }));
+
+    const res = await request(app)
+      .post('/api/user/invite')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ email: 'test@bildyapp.com', role: 'guest' });
+
+    expect(res.status).toBe(409);
+  });
+
+  it('devuelve 401 sin token', async () => {
+    const res = await request(app)
+      .post('/api/user/invite')
+      .send({ email: 'alguien@example.com', role: 'guest' });
+
+    expect(res.status).toBe(401);
   });
 });
